@@ -1,4 +1,5 @@
-import { Body, Card, Screen, Title } from '@/components/ui';
+import { router } from 'expo-router';
+import { Body, Button, Card, Screen, Title } from '@/components/ui';
 import { useReadyProfile } from '@/features/auth/session-provider';
 import { useVillages, villageLabel } from '@/features/profile/use-villages';
 import { useI18n } from '@/i18n/i18n-provider';
@@ -16,8 +17,8 @@ export default function HomeScreen() {
         <Body muted>{f(s.home.village, { village: villageLabel(village, language) })}</Body>
       ) : null}
       <Card>
-        <Body>{s.home.reportTitle}</Body>
-        <Body muted>{s.home.reportComingSoon}</Body>
+        <Body muted>{s.home.reportHint}</Body>
+        <Button label={s.home.reportTitle} onPress={() => router.push('/report')} />
       </Card>
     </Screen>
   );

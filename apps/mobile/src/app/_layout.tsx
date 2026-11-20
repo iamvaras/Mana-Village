@@ -67,6 +67,8 @@ function RootNavigator() {
       </Stack.Protected>
       <Stack.Protected guard={stage.kind === 'ready'}>
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="report" options={{ presentation: 'fullScreenModal' }} />
+        <Stack.Screen name="report-sent" options={{ gestureEnabled: false }} />
       </Stack.Protected>
     </Stack>
   );

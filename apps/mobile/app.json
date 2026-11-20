@@ -21,7 +21,24 @@
       },
       "predictiveBackGestureEnabled": false
     },
-    "plugins": ["expo-router", "expo-secure-store"],
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Mana Village uses the camera to take photos of village problems you report.",
+          "photosPermission": "Mana Village lets you choose photos of village problems you report.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Mana Village uses your location only when you report a problem, so the Panchayat can find it."
+        }
+      ]
+    ],
     "experiments": {
       "typedRoutes": true
     }

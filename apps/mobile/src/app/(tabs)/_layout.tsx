@@ -1,4 +1,4 @@
-import { Tabs } from 'expo-router';
+import { router, Tabs } from 'expo-router';
 import { Text, type ColorValue } from 'react-native';
 import { colors } from '@/components/theme';
 import { useI18n } from '@/i18n/i18n-provider';
@@ -22,6 +22,17 @@ export default function TabsLayout() {
     >
       <Tabs.Screen name="index" options={{ title: s.tabs.home, tabBarIcon: icon('⌂') }} />
       <Tabs.Screen name="my-issues" options={{ title: s.tabs.myIssues, tabBarIcon: icon('☰') }} />
+      <Tabs.Screen
+        name="report-tab"
+        options={{ title: s.tabs.report, tabBarIcon: icon('＋') }}
+        listeners={{
+          tabPress: (e) => {
+            // The report flow opens full screen instead of as a tab.
+            e.preventDefault();
+            router.push('/report');
+          },
+        }}
+      />
       <Tabs.Screen
         name="notifications"
         options={{ title: s.tabs.notifications, tabBarIcon: icon('◔') }}
