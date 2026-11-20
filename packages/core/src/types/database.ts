@@ -690,9 +690,19 @@ isOneToOne: false
 "admin_get_user_contact":
 { Args: { "p_issue_id"?: string,"p_user_id": string }; Returns: string
                            },
+"admin_list_departments":
+{ Args: { "p_village_id": string }; Returns: {
+              "description": string,"id": string,"is_active": boolean,"name": string,"name_local": string,"open_issue_count": number,"worker_count": number
+            }[]
+                           },
 "admin_list_users":
 { Args: { "p_limit"?: number,"p_offset"?: number,"p_role_key"?: string,"p_search"?: string,"p_village_id": string }; Returns: {
               "created_at": string,"display_name": string,"full_name": string,"id": string,"roles": Json,"status": Database["public"]['Enums']["user_status"]
+            }[]
+                           },
+"admin_list_workers":
+{ Args: { "p_department_id"?: string,"p_village_id": string }; Returns: {
+              "completed_assignments": number,"department_id": string,"department_name": string,"display_name": string,"full_name": string,"granted_at": string,"open_assignments": number,"user_id": string,"user_role_id": string,"user_status": Database["public"]['Enums']["user_status"]
             }[]
                            },
 "assign_issue":
@@ -790,6 +800,9 @@ isOneToOne: false
 "service_find_user_by_phone":
 { Args: { "p_phone": string }; Returns: string
                            },
+"set_department_active":
+{ Args: { "p_active": boolean,"p_department_id": string }; Returns: undefined
+                           },
 "set_issue_priority":
 { Args: { "p_expected_version": number,"p_issue_id": string,"p_priority": Database["public"]['Enums']["issue_priority"] }; Returns: number
                            },
@@ -810,6 +823,9 @@ isOneToOne: false
                            },
 "unsupport_issue":
 { Args: { "p_issue_id": string }; Returns: number
+                           },
+"upsert_department":
+{ Args: { "p_description"?: string,"p_id"?: string,"p_name": string,"p_name_local"?: string,"p_village_id": string }; Returns: string
                            },
 "verify_issue":
 { Args: { "p_expected_version": number,"p_issue_id": string,"p_note"?: string,"p_priority"?: Database["public"]['Enums']["issue_priority"],"p_source"?: string }; Returns: number

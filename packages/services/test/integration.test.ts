@@ -352,4 +352,75 @@ describe.skipIf(!enabled)('services against local Supabase', () => {
     },
     30_000,
   );
+
+  it.skipIf(!serviceKey)(
+    'staff review, verify, assign and reprioritise an issue; versions protect against stale screens',
+    async () => {
+      const reporter = services();
+      await reporter.auth.verifyOtp('9000000016', '123456');
+      const categories = await reporter.issues.listCategories();
+      const other = categories.ok ? categories.value.find((c) => c.key === 'OTHER') : undefined;
+      if (!other) throw new Error('no OTHER category');
+      const created = await reporter.issues.createIssue(
+        {
+          villageId: RMP,
+          categoryId: other.id,
+          title: 'Fallen tree branch on the road',
+          locationText: 'Near the old well',
+          clientRequestId: crypto.randomUUID(),
+        },
+        [],
+      );
+      if (!created.ok) throw new Error(created.error.message);
+      const id = created.value.id;
+
+      const staff = await staffServices('9000000010', 'b0000000-0000-4000-8000-000000000010');
+      const w = staff.workflow;
+      expect(await w.startReview(id, 1)).toEqual({ ok: true, value: 2 });
+      const stale = await w.verify(id, 1);
+      expect(stale.ok ? 'ok' : stale.error.code).toBe('CONFLICT');
+      const tooShort = await w.reject(id, 2, 'no');
+      expect(tooShort.ok ? 'ok' : tooShort.error.fields?.['reason']).toMatch(/at least 10/);
+      expect((await w.verify(id, 2, { priority: 'HIGH', note: 'Seen on site' })).ok).toBe(true);
+
+      const departments = await staff.departments.list(RMP);
+      if (!departments.ok) throw new Error(departments.error.message);
+      const elec = departments.value.find((d) => d.name === 'Electrical');
+      if (!elec) throw new Error('no Electrical');
+      const workers = await staff.departments.listWorkers(RMP, elec.id);
+      if (!workers.ok) throw new Error(workers.error.message);
+      const ramesh = workers.value.find((x) => x.displayName === 'Ramesh');
+      expect(ramesh?.departmentName).toBe('Electrical');
+      expect(Object.keys(ramesh ?? {})).not.toContain('phone');
+
+      const detail = await staff.issueReads.getIssue(id);
+      if (!detail.ok || !detail.value) throw new Error('issue not visible');
+      const assigned = await w.assign(id, detail.value.version, {
+        departmentId: elec.id,
+        assigneeUserId: ramesh?.userId,
+        note: 'Please clear it today',
+        dueAt: new Date(Date.now() + 86_400_000),
+      });
+      if (!assigned.ok) throw new Error(assigned.error.message);
+      const noReason = await w.assign(id, assigned.value, { departmentId: elec.id, reason: '' });
+      expect(noReason.ok ? 'ok' : noReason.error.code).toBe('VALIDATION');
+      expect((await w.setPriority(id, assigned.value, 'CRITICAL')).ok).toBe(true);
+
+      const after = await staff.issueReads.getIssue(id);
+      expect(after.ok && after.value).toMatchObject({
+        status: 'ASSIGNED',
+        priority: 'CRITICAL',
+        assignedDepartmentId: elec.id,
+        assignedUserName: 'Ramesh',
+      });
+
+      // The president may assign work but department management belongs to the secretary.
+      const save = await staff.departments.save(RMP, { name: 'Parks' });
+      expect(save.ok ? 'ok' : save.error.code).toBe('FORBIDDEN');
+      // A citizen cannot act at all.
+      const citizen = await reporter.workflow.setPriority(id, 1, 'LOW');
+      expect(citizen.ok ? 'ok' : citizen.error.code).toBe('FORBIDDEN');
+    },
+    30_000,
+  );
 });

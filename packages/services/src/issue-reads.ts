@@ -39,8 +39,12 @@ export interface IssueDetail extends IssueSummary {
   reporterName: string | null;
   /** Only staff receive the reporter id (for the audited "reveal phone" action). */
   reporterId: string | null;
+  assignedDepartmentId: string | null;
   assignedDepartmentName: string | null;
+  assignedUserId: string | null;
   assignedUserName: string | null;
+  /** Set when the issue was marked as a duplicate of another one. */
+  duplicateOfIssueId: string | null;
   iAmAssignee: boolean;
   reopenCount: number;
   resolvedAt: string | null;
@@ -81,6 +85,8 @@ export interface IssueReadsService {
   listMine(filter: MyIssuesFilter): Promise<Result<IssueSummary[]>>;
   /** Most recent issues in a village (staff dashboard). */
   listRecent(villageId: string, limit?: number): Promise<Result<IssueSummary[]>>;
+  /** Finds an issue in a village by its number (e.g. RMP-2026-00012). */
+  findByNumber(villageId: string, issueNumber: string): Promise<Result<IssueSummary | null>>;
   /** `null` when the issue does not exist or the viewer may not see it. */
   getIssue(issueId: string): Promise<Result<IssueDetail | null>>;
   getTimeline(issueId: string): Promise<Result<TimelineRow[]>>;
@@ -182,6 +188,23 @@ export function createIssueReadsService(client: ManaClient): IssueReadsService {
       return res.ok ? ok(res.value.map(toSummary)) : res;
     },
 
+    async findByNumber(villageId, issueNumber) {
+      const number = issueNumber.trim().toUpperCase();
+      if (!/^[A-Z0-9]{2,10}-\d{4}-\d{5}$/.test(number)) {
+        return validationError({ issueNumber: 'Use the full number, like RMP-2026-00012.' });
+      }
+      const res = await run(() =>
+        client
+          .from('issues_view')
+          .select(SUMMARY_COLUMNS)
+          .eq('village_id', villageId)
+          .eq('issue_number', number)
+          .maybeSingle(),
+      );
+      if (!res.ok) return res;
+      return ok(res.value ? toSummary(res.value) : null);
+    },
+
     async getIssue(issueId) {
       const res = await run(() =>
         client.from('issues_view').select('*').eq('id', issueId).maybeSingle(),
@@ -199,8 +222,11 @@ export function createIssueReadsService(client: ManaClient): IssueReadsService {
         version: r.version,
         reporterName: r.reporter_name,
         reporterId: r.reporter_id,
+        assignedDepartmentId: r.assigned_department_id,
         assignedDepartmentName: r.assigned_department_name,
+        assignedUserId: r.assigned_user_id,
         assignedUserName: r.assigned_user_name,
+        duplicateOfIssueId: r.duplicate_of_issue_id,
         iAmAssignee: r.i_am_assignee === true,
         reopenCount: r.reopen_count,
         resolvedAt: r.resolved_at,

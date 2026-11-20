@@ -1,6 +1,6 @@
 # Mana Village: Design Docs
 
-Status: **All Phase 0 questions answered (2026-11-20); docs updated to match. Phases 2–5 done; Phase 6 (admin dashboard and All Issues) in review.**
+Status: **All Phase 0 questions answered (2026-11-20); docs updated to match. Phases 2–6 done; Phase 7 (verification and assignment) in review.**
 
 Mana Village is an issue tracking, resolution and transparency system for village civic problems. It is not a complaint form. Every issue carries a permanent, reconstructable timeline of who did what and when.
 
@@ -93,3 +93,12 @@ These refine the design above; the code and these notes win where they differ.
 4. **All Issues filters live in the address bar**, so a filtered view can be bookmarked or shared with another staff member. Saved views: Open, Needs review, Critical, Reopened, Waiting for resident.
 5. **"Affected" in the table counts the reporter plus supporters.**
 6. Not in this phase: the "overdue" count from docs/ui-ux.md (needs assignment due dates, which arrive with assignment in Phase 7) and `resolution_trend` (Analytics, Phase 11).
+
+## Changes made while building Phase 7
+
+1. **New database functions for the Departments and Workers screens** (migration `20261120001800`): `upsert_department`, `set_department_active` (both named in docs/api.md), plus `admin_list_departments` (worker and open-issue counts) and `admin_list_workers` (open and completed work per worker). No new tables. Worker lists never include phone numbers.
+2. **A department with open work cannot be deactivated.** Its issues must be reassigned first, so nothing is left without an owner.
+3. **The issue page action panel shows only the next steps the database would allow** (from the shared workflow table in `packages/core`): Start review, Verify (with priority), Reject (reason shown to the resident), Mark as duplicate (find the earlier report by its number), Assign / Reassign (department, optional worker with current workload, optional due date, reason for reassigning), Review again. Priority and public/private can be changed at any time. Closing and reopening come with Phase 9.
+4. **Every action sends the version the person was looking at.** If someone else changed the issue meanwhile, the database refuses and the page refreshes with a clear message.
+5. **Database messages are shown as plain sentences** ("A department with this name already exists.") instead of the internal code prefix.
+6. Adding a worker uses the existing `invite-staff` Edge Function, which cannot run in the local setup here; it was checked up to the phone-number validation. Removing a worker revokes the WORKER role with a reason (audited) and warns when they still have open issues.

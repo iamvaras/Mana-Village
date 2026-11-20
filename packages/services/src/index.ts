@@ -2,6 +2,7 @@ import type { ManaClient } from './client';
 import { createAdminService } from './admin';
 import { createAnalyticsService } from './analytics';
 import { createAuthService } from './auth';
+import { createDepartmentsService } from './departments';
 import { createMfaService } from './mfa';
 import { createPermissionsService } from './permissions';
 import { createIssueListService } from './issue-list';
@@ -10,6 +11,7 @@ import { createIssuesService } from './issues';
 import { createNotificationsService } from './notifications';
 import { createProfileService } from './profile';
 import { createVillagesService } from './villages';
+import { createWorkflowService } from './workflow';
 
 export type { ManaClient } from './client';
 export * from './errors';
@@ -24,6 +26,8 @@ export * from './issue-reads';
 export * from './notifications';
 export * from './analytics';
 export * from './issue-list';
+export * from './workflow';
+export * from './departments';
 
 /** All services bound to one Supabase client. Components use hooks that call these. */
 export function createServices(client: ManaClient) {
@@ -39,6 +43,8 @@ export function createServices(client: ManaClient) {
     notifications: createNotificationsService(client),
     analytics: createAnalyticsService(client),
     issueList: createIssueListService(client),
+    workflow: createWorkflowService(client),
+    departments: createDepartmentsService(client),
   };
 }
 export type Services = ReturnType<typeof createServices>;

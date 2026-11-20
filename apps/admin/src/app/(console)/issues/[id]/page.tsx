@@ -1,13 +1,22 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { buildTimeline, formatTimelineTime } from '@mana/core';
+import { availableActions, buildTimeline, formatTimelineTime } from '@mana/core';
 import { Alert } from '@/components/ui/alert';
 import { Card } from '@/components/ui/card';
 import { requireStaff } from '@/features/auth/staff-context';
 import { CommentForm } from '@/features/issues/comment-form';
+import { IssueActions } from '@/features/issues/issue-actions';
+import { PANEL_ACTIONS, type PanelAction } from '@/features/issues/panel-actions';
 import { LiveRefresh } from '@/features/issues/live-refresh';
-import { actorText, eventText, STATUS_LABEL, statusClass } from '@/features/issues/labels';
+import {
+  actorText,
+  eventText,
+  PRIORITY_LABEL,
+  priorityClass,
+  STATUS_LABEL,
+  statusClass,
+} from '@/features/issues/labels';
 import { getServerServices } from '@/lib/supabase/server';
 
 export const metadata: Metadata = { title: 'Issue' };
@@ -32,6 +41,22 @@ export default async function IssuePage({ params }: { params: Promise<{ id: stri
   const d = issue.value;
   const entries = timeline.ok ? buildTimeline(timeline.value) : [];
   const canWriteInternal = ctx.permissions.has('issue.comment_internal');
+  const isOwnReport = d.reporterId === ctx.userId;
+  const actions = availableActions(d.status, {
+    has: (k) => ctx.permissions.has(k),
+    isReporter: isOwnReport,
+    isAssignee: d.iAmAssignee,
+  })
+    .filter((a): a is PanelAction => (PANEL_ACTIONS as readonly string[]).includes(a))
+    // Conflict of interest: the database refuses verifying your own report.
+    .filter((a) => !(isOwnReport && a === 'verify'));
+  const needsAssignees = actions.includes('assign') || actions.includes('reassign');
+  const [departments, workers] = needsAssignees
+    ? await Promise.all([
+        services.departments.list(d.villageId),
+        services.departments.listWorkers(d.villageId),
+      ])
+    : [null, null];
 
   return (
     <div className="flex max-w-6xl flex-col gap-6">
@@ -44,7 +69,9 @@ export default async function IssuePage({ params }: { params: Promise<{ id: stri
             {STATUS_LABEL[d.status]}
           </span>
           <span className="text-sm text-neutral-500">{d.issueNumber}</span>
-          <span className="text-sm text-neutral-500">Priority: {d.priority.toLowerCase()}</span>
+          <span className={`text-sm ${priorityClass(d.priority)}`}>
+            {PRIORITY_LABEL[d.priority]} priority
+          </span>
           {d.visibility === 'PRIVATE' ? (
             <span className="text-sm text-neutral-500">Private</span>
           ) : null}
@@ -78,7 +105,9 @@ export default async function IssuePage({ params }: { params: Promise<{ id: stri
                 ) : null}
               </dd>
               <dt className="text-neutral-500">Affected residents</dt>
-              <dd>{d.supporterCount}</dd>
+              <dd>{d.supporterCount + 1}</dd>
+              <dt className="text-neutral-500">Priority</dt>
+              <dd>{PRIORITY_LABEL[d.priority]}</dd>
               <dt className="text-neutral-500">Department</dt>
               <dd>{d.assignedDepartmentName ?? '—'}</dd>
               <dt className="text-neutral-500">Assigned to</dt>
@@ -153,38 +182,94 @@ export default async function IssuePage({ params }: { params: Promise<{ id: stri
           </Card>
         </div>
 
-        <Card title="Timeline">
-          {!timeline.ok ? (
-            <Alert tone="error">Could not load the timeline.</Alert>
-          ) : (
-            <ol className="flex flex-col">
-              {entries.map((e, i) => (
-                <li key={`${e.eventType}-${e.sourceId}`} className="flex gap-3">
-                  <div className="flex w-3 flex-col items-center">
-                    <span
-                      className={`mt-1.5 h-2.5 w-2.5 rounded-full ${e.kind === 'status' ? 'bg-brand-600' : 'bg-neutral-300'}`}
-                    />
-                    {i < entries.length - 1 ? (
-                      <span className="w-px flex-1 bg-neutral-200" />
-                    ) : null}
-                  </div>
-                  <div className="pb-5 text-sm">
-                    <p className="font-medium text-neutral-900">
-                      {eventText(e)}
-                      {e.visibility === 'INTERNAL' ? (
-                        <span className="ml-2 text-xs text-amber-700">internal</span>
+        <div className="flex flex-col gap-6">
+          <Card title="Actions">
+            {needsAssignees && (!departments?.ok || !workers?.ok) ? (
+              <div className="mb-3">
+                <Alert tone="error">
+                  Could not load departments and workers. Reload to try again.
+                </Alert>
+              </div>
+            ) : null}
+            {d.duplicateOfIssueId ? (
+              <p className="mb-3 text-sm text-neutral-700">
+                Duplicate of{' '}
+                <Link href={`/issues/${d.duplicateOfIssueId}`} className="underline">
+                  the original report
+                </Link>
+                .
+              </p>
+            ) : null}
+            <IssueActions
+              issue={{
+                id: d.id,
+                villageId: d.villageId,
+                version: d.version,
+                status: d.status,
+                priority: d.priority,
+                visibility: d.visibility,
+                assignedDepartmentId: d.assignedDepartmentId,
+                assignedUserId: d.assignedUserId,
+              }}
+              actions={actions}
+              canSetPriority={ctx.permissions.has('issue.set_priority')}
+              canSetVisibility={ctx.permissions.has('issue.set_visibility')}
+              isOwnReport={isOwnReport}
+              departments={
+                departments?.ok
+                  ? departments.value
+                      .filter((x) => x.isActive)
+                      .map((x) => ({ id: x.id, name: x.name, openIssueCount: x.openIssueCount }))
+                  : []
+              }
+              workers={
+                workers?.ok
+                  ? workers.value
+                      .filter((x) => x.status === 'ACTIVE')
+                      .map((x) => ({
+                        userId: x.userId,
+                        name: x.displayName ?? x.fullName,
+                        departmentId: x.departmentId,
+                        openAssignments: x.openAssignments,
+                      }))
+                  : []
+              }
+            />
+          </Card>
+
+          <Card title="Timeline">
+            {!timeline.ok ? (
+              <Alert tone="error">Could not load the timeline.</Alert>
+            ) : (
+              <ol className="flex flex-col">
+                {entries.map((e, i) => (
+                  <li key={`${e.eventType}-${e.sourceId}`} className="flex gap-3">
+                    <div className="flex w-3 flex-col items-center">
+                      <span
+                        className={`mt-1.5 h-2.5 w-2.5 rounded-full ${e.kind === 'status' ? 'bg-brand-600' : 'bg-neutral-300'}`}
+                      />
+                      {i < entries.length - 1 ? (
+                        <span className="w-px flex-1 bg-neutral-200" />
                       ) : null}
-                    </p>
-                    <p className="text-xs text-neutral-500">
-                      {actorText(e)} · {formatTimelineTime(e.occurredAt)}
-                    </p>
-                    {e.reason ? <p className="mt-1 text-neutral-700">{e.reason}</p> : null}
-                  </div>
-                </li>
-              ))}
-            </ol>
-          )}
-        </Card>
+                    </div>
+                    <div className="pb-5 text-sm">
+                      <p className="font-medium text-neutral-900">
+                        {eventText(e)}
+                        {e.visibility === 'INTERNAL' ? (
+                          <span className="ml-2 text-xs text-amber-700">internal</span>
+                        ) : null}
+                      </p>
+                      <p className="text-xs text-neutral-500">
+                        {actorText(e)} · {formatTimelineTime(e.occurredAt)}
+                      </p>
+                      {e.reason ? <p className="mt-1 text-neutral-700">{e.reason}</p> : null}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </Card>
+        </div>
       </div>
     </div>
   );

@@ -33,6 +33,17 @@ export function friendlyMessage(code: AppErrorCode): string {
 }
 
 /**
+ * "MV_VALIDATION: a department with this name already exists" → "A department with
+ * this name already exists." The database writes these details for people to read.
+ */
+export function dbDetail(message: string): string {
+  const text = message.replace(/^.*?MV_[A-Z_]+:\s*/s, '').trim();
+  if (!text) return message;
+  const sentence = text.charAt(0).toUpperCase() + text.slice(1);
+  return /[.!?]$/.test(sentence) ? sentence : `${sentence}.`;
+}
+
+/**
  * Convert any Supabase / network error into an AppError.
  * Database functions raise "MV_<CODE>: detail" (see private.raise_app_error).
  */
@@ -44,7 +55,7 @@ export function toAppError(e: unknown): AppError {
   const status = typeof x.status === 'number' ? x.status : undefined;
 
   const fromDb = codeFromDbMessage(message);
-  if (fromDb !== 'UNKNOWN') return { code: fromDb, message };
+  if (fromDb !== 'UNKNOWN') return { code: fromDb, message: dbDetail(message) };
 
   if (x.name === 'TypeError' && /fetch|network/i.test(message)) return { code: 'NETWORK', message };
   if (/Failed to fetch|Network request failed|NetworkError|ECONNREFUSED/i.test(message)) {
