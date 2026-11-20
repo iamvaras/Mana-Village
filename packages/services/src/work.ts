@@ -1,6 +1,6 @@
 import { LIMITS, ok, type IssuePriority, type IssueStatus, type Result } from '@mana/core';
 import type { ManaClient } from './client';
-import type { UploadedPhoto } from './issues';
+import { attachmentsPayload as photosPayload, type UploadedPhoto } from './issues';
 import { required, run, validationError } from './errors';
 import { reasonProblem } from './workflow';
 
@@ -81,14 +81,6 @@ export function workSteps(item: Pick<WorkItem, 'status' | 'assignmentStatus'>): 
       return [];
   }
 }
-
-const photosPayload = (photos: readonly UploadedPhoto[]) =>
-  photos.map((p) => ({
-    id: p.id,
-    path: p.path,
-    ...(p.width ? { width: p.width } : {}),
-    ...(p.height ? { height: p.height } : {}),
-  }));
 
 export interface WorkService {
   /** Only the signed-in worker's own active work. */

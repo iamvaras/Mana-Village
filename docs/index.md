@@ -1,6 +1,6 @@
 # Mana Village: Design Docs
 
-Status: **All Phase 0 questions answered (2026-11-20); docs updated to match. Phases 2–7 done; Phase 8 (worker workflow) in review.**
+Status: **All Phase 0 questions answered (2026-11-20); docs updated to match. Phases 2–8 done; Phase 9 (resolution and confirmation) in review.**
 
 Mana Village is an issue tracking, resolution and transparency system for village civic problems. It is not a complaint form. Every issue carries a permanent, reconstructable timeline of who did what and when.
 
@@ -111,3 +111,11 @@ These refine the design above; the code and these notes win where they differ.
 4. **The work steps live on the normal issue screen** instead of a separate `work/[id]` screen: a "Your work" card appears there for the assigned worker, with the secretary's instruction, Open in Maps, and only the buttons the database would allow (Accept / Decline with a reason / Start work / Add an update / Mark as done). One screen means the worker also sees the timeline, photos and comments in one place.
 5. **Updates are public notes so the resident sees progress.** Marking as done needs at least one completion photo; photos are resized and stripped of location data on the phone, as in the report flow. Staff notes (internal comments) are shown to the assigned worker with a "Staff note" label and are never shown to residents.
 6. Declining sends the issue back to Verified and tells the secretary, who reassigns it.
+
+## Changes made while building Phase 9
+
+1. **No database changes were needed.** `confirm_resolution`, `close_issue`, `reopen_issue`, the 3-day reminder and the 7-day auto-close (both run by pg_cron) were already built in Phase 2. This phase added the screens and the end-to-end test (`11_resolution_lifecycle.test.sql`: one issue goes through solved, not solved, solved again, reminder, auto-close, reopened by staff, assigned again, and confirmed solved).
+2. **Mobile "Was it fixed?" screen** (`issue/[id]/confirm`): shows the completion photos from the latest round of work and the worker's note, with **YES, SOLVED** and **NO, STILL NOT SOLVED**. "No" asks for a reason (at least 10 letters) and an optional photo. Only the reporter sees the buttons; anyone else, or a second visit after answering, sees where the issue stands. The alert "Was this problem actually solved?" and its reminder open this screen directly, and the issue screen shows a "Was it fixed?" card to the reporter while the issue waits.
+3. **Admin issue page:** **Close without the resident** (only for a solved issue, reason required and shown to the resident) and **Reopen** (solved or closed issue, reason required).
+4. **Reopening a closed issue does not hand it back to the worker by itself.** Closing finishes the earlier assignment, so the secretary assigns it again (the page says so). When the resident says "not solved", the same worker keeps the work and can restart straight away.
+5. Photo picking for workers and residents now shares one component.

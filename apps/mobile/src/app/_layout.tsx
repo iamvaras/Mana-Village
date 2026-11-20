@@ -69,7 +69,14 @@ function RootNavigator() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="report" options={{ presentation: 'fullScreenModal' }} />
         <Stack.Screen name="report-sent" options={{ gestureEnabled: false }} />
-        <Stack.Screen name="issue/[id]" options={{ headerShown: true, headerBackTitle: '' }} />
+        <Stack.Screen
+          name="issue/[id]/index"
+          options={{ headerShown: true, headerBackTitle: '' }}
+        />
+        <Stack.Screen
+          name="issue/[id]/confirm"
+          options={{ headerShown: true, headerBackTitle: '' }}
+        />
       </Stack.Protected>
     </Stack>
   );

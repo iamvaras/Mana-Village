@@ -39,6 +39,10 @@ export interface WorkflowService {
   ): Promise<Result<number>>;
   reconsider(issueId: string, version: number, reason: string): Promise<Result<number>>;
   assign(issueId: string, version: number, input: AssignInput): Promise<Result<number>>;
+  /** Close a solved issue without the resident's answer. */
+  close(issueId: string, version: number, reason: string): Promise<Result<number>>;
+  /** Reopen a solved or closed issue. */
+  reopen(issueId: string, version: number, reason: string): Promise<Result<number>>;
   setPriority(issueId: string, version: number, priority: IssuePriority): Promise<Result<number>>;
   setVisibility(
     issueId: string,
@@ -160,6 +164,34 @@ export function createWorkflowService(client: ManaClient): WorkflowService {
             ...(input.dueAt ? { p_due_at: input.dueAt.toISOString() } : {}),
             ...(reason ? { p_reason: reason } : {}),
           }),
+        ),
+      );
+    },
+
+    close(issueId, version, reason) {
+      return withReason(reason, async (r) =>
+        required(
+          await run(() =>
+            client.rpc('close_issue', {
+              p_issue_id: issueId,
+              p_expected_version: version,
+              p_reason: r,
+            }),
+          ),
+        ),
+      );
+    },
+
+    reopen(issueId, version, reason) {
+      return withReason(reason, async (r) =>
+        required(
+          await run(() =>
+            client.rpc('reopen_issue', {
+              p_issue_id: issueId,
+              p_expected_version: version,
+              p_reason: r,
+            }),
+          ),
         ),
       );
     },

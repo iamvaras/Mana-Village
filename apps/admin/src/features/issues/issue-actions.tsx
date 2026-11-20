@@ -23,6 +23,8 @@ const ACTION_LABEL: Readonly<Record<PanelAction, string>> = {
   assign: 'Assign',
   reassign: 'Reassign',
   reconsider: 'Review again',
+  close: 'Close without the resident',
+  reopen: 'Reopen',
 };
 
 export interface DepartmentOption {
@@ -168,6 +170,18 @@ export function IssueActions(props: IssueActionsProps) {
         );
       case 'reconsider':
         return finish(await w().reconsider(issue.id, v, reason), 'Issue is back under review.');
+      case 'close':
+        return finish(
+          await w().close(issue.id, v, reason),
+          'Issue closed. The resident and supporters have been told.',
+        );
+      case 'reopen':
+        return finish(
+          await w().reopen(issue.id, v, reason),
+          issue.status === 'CLOSED'
+            ? 'Issue reopened. Assign it again to send it to a worker.'
+            : 'Issue reopened. The worker has been told.',
+        );
       case 'mark_duplicate': {
         if (!original) {
           setBusy(false);
@@ -263,8 +277,7 @@ export function IssueActions(props: IssueActionsProps) {
         </div>
       ) : (
         <p className="text-sm text-neutral-600">
-          No review or assignment step is due while the issue is{' '}
-          {STATUS_LABEL[issue.status].toLowerCase()}.
+          No step is due from you while the issue is {STATUS_LABEL[issue.status].toLowerCase()}.
         </p>
       )}
 
@@ -274,6 +287,19 @@ export function IssueActions(props: IssueActionsProps) {
           className="flex flex-col gap-3 rounded-md border border-neutral-200 bg-neutral-50 p-4"
         >
           <h3 className="text-sm font-semibold text-neutral-900">{ACTION_LABEL[open]}</h3>
+
+          {open === 'close' ? (
+            <p className="text-sm text-neutral-700">
+              Use this only when the resident cannot answer (for example, they confirmed by phone).
+              Otherwise the issue closes by itself if the resident does not answer within the
+              village&apos;s waiting time.
+            </p>
+          ) : null}
+          {open === 'reopen' && issue.status === 'CLOSED' ? (
+            <p className="text-sm text-neutral-700">
+              The earlier work is finished, so after reopening you assign it again.
+            </p>
+          ) : null}
 
           {open === 'start_review' ? (
             <p className="text-sm text-neutral-700">
@@ -384,7 +410,11 @@ export function IssueActions(props: IssueActionsProps) {
             </>
           ) : null}
 
-          {open === 'reject' || open === 'reconsider' || open === 'reassign' ? (
+          {open === 'reject' ||
+          open === 'reconsider' ||
+          open === 'reassign' ||
+          open === 'close' ||
+          open === 'reopen' ? (
             <Labelled
               id="reason"
               label={
@@ -392,7 +422,11 @@ export function IssueActions(props: IssueActionsProps) {
                   ? 'Reason (the resident will see this)'
                   : open === 'reassign'
                     ? 'Why is it being reassigned?'
-                    : 'Why review it again?'
+                    : open === 'close'
+                      ? 'Why close it without the resident? (the resident will see this)'
+                      : open === 'reopen'
+                        ? 'Why reopen it? (the resident will see this)'
+                        : 'Why review it again?'
               }
             >
               <textarea

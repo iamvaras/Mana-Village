@@ -6,9 +6,9 @@ import { readPhotoBytes } from '@/features/report/draft-store';
 import { pickPhotos } from '@/features/report/photo-pipeline';
 import { services } from '@/lib/supabase';
 
-export const MAX_WORK_PHOTOS = LIMITS.maxPhotosPerUpload;
+export const MAX_ATTACHED_PHOTOS = LIMITS.maxPhotosPerUpload;
 
-export interface WorkPhoto {
+export interface AttachedPhoto {
   id: string;
   uri: string;
   width: number;
@@ -19,18 +19,18 @@ export interface WorkPhoto {
 
 export type AddPhotoProblem = 'camera_denied' | 'photos_denied' | 'failed';
 
-/** Work photos picked on the phone (resized, EXIF removed) and sent before the action. */
-export function useWorkPhotos() {
-  const [photos, setPhotos] = useState<WorkPhoto[]>([]);
+/** Photos picked on the phone (resized, EXIF removed) and sent before a work step or an answer. */
+export function useAttachedPhotos() {
+  const [photos, setPhotos] = useState<AttachedPhoto[]>([]);
 
   async function add(source: 'camera' | 'library'): Promise<AddPhotoProblem | null> {
-    const result = await pickPhotos(source, MAX_WORK_PHOTOS - photos.length);
+    const result = await pickPhotos(source, MAX_ATTACHED_PHOTOS - photos.length);
     if (result.kind === 'permission_denied')
       return source === 'camera' ? 'camera_denied' : 'photos_denied';
     if (result.kind === 'failed') return 'failed';
     if (result.kind === 'picked') {
       const added = result.photos.map((p) => ({ ...p, id: Crypto.randomUUID() }));
-      setPhotos((prev) => [...prev, ...added].slice(0, MAX_WORK_PHOTOS));
+      setPhotos((prev) => [...prev, ...added].slice(0, MAX_ATTACHED_PHOTOS));
     }
     return null;
   }
