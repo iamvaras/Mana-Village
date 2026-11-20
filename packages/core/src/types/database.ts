@@ -835,6 +835,9 @@ isOneToOne: false
 "service_find_user_by_phone":
 { Args: { "p_phone": string }; Returns: string
                            },
+"set_category_active":
+{ Args: { "p_active": boolean,"p_id": string }; Returns: undefined
+                           },
 "set_department_active":
 { Args: { "p_active": boolean,"p_department_id": string }; Returns: undefined
                            },
@@ -846,6 +849,9 @@ isOneToOne: false
                            },
 "set_push_enabled":
 { Args: { "p_enabled": boolean }; Returns: undefined
+                           },
+"set_role_permissions":
+{ Args: { "p_permission_keys": (string)[],"p_role_key": string }; Returns: number
                            },
 "set_user_status":
 { Args: { "p_reason": string,"p_status": Database["public"]['Enums']["user_status"],"p_user_id": string }; Returns: undefined
@@ -862,8 +868,14 @@ isOneToOne: false
 "unsupport_issue":
 { Args: { "p_issue_id": string }; Returns: number
                            },
+"update_village_settings":
+{ Args: { "p_settings": Json,"p_village_id": string }; Returns: Json
+                           },
 "upsert_announcement":
 { Args: { "p_body": string,"p_body_local"?: string,"p_expires_at"?: string,"p_id"?: string,"p_is_pinned"?: boolean,"p_title": string,"p_title_local"?: string,"p_village_id": string }; Returns: string
+                           },
+"upsert_category":
+{ Args: { "p_default_priority"?: Database["public"]['Enums']["issue_priority"],"p_icon"?: string,"p_id"?: string,"p_key": string,"p_name": string,"p_name_local"?: string,"p_photo_required"?: boolean,"p_sort_order"?: number }; Returns: string
                            },
 "upsert_department":
 { Args: { "p_description"?: string,"p_id"?: string,"p_name": string,"p_name_local"?: string,"p_village_id": string }; Returns: string

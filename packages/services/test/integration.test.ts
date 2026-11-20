@@ -625,4 +625,33 @@ describe.skipIf(!enabled)('services against local Supabase', () => {
     const deniedReport = await resident.analytics.report(RMP);
     expect(deniedReport.ok ? 'ok' : deniedReport.error.code).toBe('FORBIDDEN');
   });
+  it('the secretary changes village settings; a resident cannot; everyone reads the permission list', async () => {
+    const secretary = await staffServices('9000000012', 'b0000000-0000-4000-8000-000000000012');
+    const before = await secretary.settings.getVillageSettings(RMP);
+    if (!before.ok) throw new Error(before.error.message);
+    const bad = await secretary.settings.saveVillageSettings(RMP, {
+      ...before.value,
+      reminderDays: 99,
+    });
+    expect(bad.ok ? 'ok' : bad.error.code).toBe('VALIDATION');
+    const saved = await secretary.settings.saveVillageSettings(RMP, {
+      ...before.value,
+      autoCloseDays: 9,
+    });
+    expect(saved.ok && saved.value.autoCloseDays).toBe(9);
+    expect((await secretary.settings.saveVillageSettings(RMP, before.value)).ok).toBe(true);
+
+    const cats = await secretary.settings.saveCategory({ key: 'PARKS', name: 'Parks' });
+    expect(cats.ok ? 'ok' : cats.error.code).toBe('FORBIDDEN');
+
+    const resident = services();
+    await resident.auth.verifyOtp('9000000015', '123456');
+    const denied = await resident.settings.saveVillageSettings(RMP, before.value);
+    expect(denied.ok ? 'ok' : denied.error.code).toBe('FORBIDDEN');
+    const matrix = await secretary.settings.getPermissionMatrix();
+    if (!matrix.ok) throw new Error(matrix.error.message);
+    expect(matrix.value.roles.find((r) => r.key === 'SECRETARY')?.permissions).toContain(
+      'settings.manage',
+    );
+  });
 });

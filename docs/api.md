@@ -38,10 +38,10 @@ Each takes `issue_id`, `expected_version`, plus the fields in [issue-workflow.md
 | `set_user_status` (user_id, status, reason) | `user.manage` |
 | `admin_get_user_contact` (user_id) | `user.view_contact`; always audited |
 | `upsert_department`, `set_department_active` | `department.manage` |
-| `upsert_category`, `set_category_active` | `category.manage` |
+| `upsert_category` (key, name, name_local?, icon?, default_priority?, sort_order, photo_required, id?), `set_category_active` (id, active) | `category.manage` (global) |
 | `upsert_announcement`, `publish_announcement` (id, notify = true; returns how many residents were alerted), `archive_announcement` | `announcement.manage` |
-| `set_role_permissions` (role_key, permission_keys[]) | `permission.manage` |
-| `update_village_settings` (village_id, settings) | `settings.manage` |
+| `set_role_permissions` (role_key, permission_keys[]); never SUPER_ADMIN | `permission.manage` (global) |
+| `update_village_settings` (village_id, settings): known keys only, null resets to default | `settings.manage` |
 
 ### Analytics (read-only, `analytics.view`)
 `dashboard_stats(village_id, from, to)` → totals per status bucket, critical count, resolution rate, avg resolution time, pending count.

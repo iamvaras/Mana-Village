@@ -1,6 +1,6 @@
 # Mana Village: Design Docs
 
-Status: **All Phase 0 questions answered (2026-11-20); docs updated to match. Phases 2–10 done; Phase 11 parts 1–2 (announcements; analytics and audit log) built, part 2 in review.**
+Status: **All Phase 0 questions answered (2026-11-20); docs updated to match. Phases 2–10 done; Phase 11 parts 1–2 merged, part 3 (users, categories, settings) in review.**
 
 Mana Village is an issue tracking, resolution and transparency system for village civic problems. It is not a complaint form. Every issue carries a permanent, reconstructable timeline of who did what and when.
 
@@ -148,3 +148,13 @@ These refine the design above; the code and these notes win where they differ.
 3. **Analytics page:** 30 days / 90 days / 1 year / all time; reported, closed and reopened rate; a reported-and-closed line chart with a table view; a time-to-fix bar chart; category and department tables. Charts use `recharts` (already listed in docs/architecture.md).
 4. **Audit Logs page:** newest first, 50 at a time with "Older entries"; filter by kind of action and dates; click a person to see only their actions, or "history" to see one item; each row opens a before/after list of the fields that changed. Audit rows never contain phone numbers.
 5. **Not in this part:** CSV export (the docs mark it "later").
+
+## Changes made while building Phase 11 (part 3: users, categories, settings)
+
+1. **New functions** (migration `20261120002400`, no new tables): `upsert_category`, `set_category_active`, `update_village_settings`, `set_role_permissions`. All changes are audited by the existing triggers.
+2. **Categories are shared by every village**, so only the Super Admin (`category.manage`) edits them. A category's code cannot change after it is created. Hiding a category keeps it on old issues; at least one category must stay visible.
+3. **Village settings** (secretary, `settings.manage`): auto-close days (3–30), reminder days (at least 1, before auto-close), daily report limit per person (1–50), "similar issue nearby" distance (50–1000 m) and whether new reports are public or private by default. Only these keys are accepted. The "reopen window" in docs/ui-ux.md has no setting behind it yet, so it is not on the screen.
+4. **Role permission editor** (Super Admin, `permission.manage`): changes apply to that role in every village. The Super Admin role itself cannot be edited (no lock-out), platform permissions stay with global roles, and residents can never get staff-only permissions. The database enforces all three.
+5. **Users page:** search by name, filter by role, 50 per page. Suspend or reactivate (reason required), give a role (Worker needs a department) or remove one (reason required). Which roles appear follows the viewer's permissions; the database checks again and refuses changes to your own account. Phone numbers are not shown.
+6. **Not in this part:** creating and editing villages (Super Admin "villages" in docs/ui-ux.md). New villages are still added by migration or seed.
+7. All admin menu items are now built; the "coming soon" marker was removed.
