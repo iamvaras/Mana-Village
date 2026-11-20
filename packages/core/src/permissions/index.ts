@@ -66,4 +66,8 @@ export class PermissionSet {
   hasAny(...keys: PermissionKey[]): boolean {
     return keys.some((k) => this.keys.has(k));
   }
+
+  get size(): number {
+    return this.keys.size;
+  }
 }

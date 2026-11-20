@@ -8,7 +8,7 @@ set search_path = public, extensions;
 create function pg_temp.login(p_uid uuid) returns void language plpgsql as $$
 begin
   execute 'reset role';
-  perform set_config('request.jwt.claims', json_build_object('sub', p_uid, 'role', 'authenticated')::text, true);
+  perform set_config('request.jwt.claims', json_build_object('sub', p_uid, 'role', 'authenticated', 'aal', 'aal2')::text, true);
   execute 'set local role authenticated';
 end $$;
 create function pg_temp.logout() returns void language plpgsql as $$

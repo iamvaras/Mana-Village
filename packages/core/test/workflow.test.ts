@@ -6,7 +6,7 @@ import {
   availableActions,
   canTransitionFrom,
   type IssueStatus,
-} from '../src/index.js';
+} from '../src/index';
 
 /**
  * Mirror of the transitions enforced by the database workflow functions

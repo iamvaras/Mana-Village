@@ -5,7 +5,7 @@ import {
   ISSUE_PRIORITIES,
   ISSUE_VISIBILITIES,
   LANGUAGES,
-} from '../enums/index.js';
+} from '../enums/index';
 
 /**
  * Client-side input validation. Limits mirror the CHECK constraints in the
