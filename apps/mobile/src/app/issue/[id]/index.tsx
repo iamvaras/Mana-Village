@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Image, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQueryClient } from '@tanstack/react-query';
 import { buildTimeline, formatTimelineTime, TERMINAL_STATUSES } from '@mana/core';
@@ -124,6 +124,16 @@ export default function IssueDetailScreen() {
           ) : null}
         </Card>
 
+        {d.isMine && d.status === 'RESOLVED' ? (
+          <Card>
+            <Text style={styles.askTitle}>{s.confirm.title}</Text>
+            <Body>{s.confirm.askCard}</Body>
+            <Button
+              label={s.confirm.askButton}
+              onPress={() => router.push({ pathname: '/issue/[id]/confirm', params: { id } })}
+            />
+          </Card>
+        ) : null}
         {workItem && d.iAmAssignee ? (
           <WorkPanel key={workItem.assignmentId} item={workItem} />
         ) : null}
@@ -250,6 +260,7 @@ function Row({ label, value }: { label: string; value: string }) {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   content: { padding: space.xl, gap: space.md },
+  askTitle: { fontSize: 18, fontWeight: '600', color: colors.text },
   section: { fontSize: 18, fontWeight: '600', color: colors.text, marginTop: space.md },
   photos: { gap: space.sm },
   photo: { width: 160, height: 160, borderRadius: 8, backgroundColor: colors.border },

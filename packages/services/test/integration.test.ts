@@ -6,7 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 import { createHmac } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_ISSUE_LIST_QUERY, buildTimeline, type Database } from '@mana/core';
-import { createServices } from '../src/index';
+import { createServices, resolutionSummary } from '../src/index';
 
 const url = process.env.MANA_SUPABASE_URL;
 const anonKey = process.env.MANA_SUPABASE_ANON_KEY;
@@ -483,5 +483,63 @@ describe.skipIf(!enabled)('services against local Supabase', () => {
     const citizen = services();
     await citizen.auth.verifyOtp('9000000015', '123456');
     expect(await citizen.work.listMyWork()).toEqual({ ok: true, value: [] });
+  });
+
+  it('the reporter sees the finished work and says it is not solved, which reopens it', async () => {
+    // Runs after the worker test above, which solved Sita's reopened road issue.
+    const sita = services();
+    const login = await sita.auth.verifyOtp('9000000017', '123456');
+    if (!login.ok) throw new Error(login.error.message);
+    const mine = await sita.issueReads.listMine('all');
+    if (!mine.ok) throw new Error(mine.error.message);
+    const waiting = mine.value.find((i) => i.status === 'RESOLVED');
+    if (!waiting) throw new Error('no solved issue waiting for Sita; reset the local database');
+
+    const [timeline, photos, detail] = await Promise.all([
+      sita.issueReads.getTimeline(waiting.id),
+      sita.issueReads.listPhotos(waiting.id),
+      sita.issueReads.getIssue(waiting.id),
+    ]);
+    if (!timeline.ok || !photos.ok || !detail.ok || !detail.value) throw new Error('read failed');
+    const summary = resolutionSummary(timeline.value, photos.value);
+    expect(summary.note).toBe('Edge rebuilt with stones');
+    expect(summary.photos.length).toBe(1);
+    expect(summary.photos.every((p) => p.kind === 'COMPLETION')).toBe(true);
+
+    // Someone else cannot answer for her.
+    const lakshmi = services();
+    await lakshmi.auth.verifyOtp('9000000015', '123456');
+    const other = await lakshmi.resolution.confirmSolved(waiting.id, detail.value.version);
+    expect(other.ok ? 'ok' : other.error.code).toBe('FORBIDDEN');
+
+    const short = await sita.resolution.reportNotSolved(waiting.id, detail.value.version, 'No', []);
+    expect(short.ok ? 'ok' : short.error.code).toBe('VALIDATION');
+    const stale = await sita.resolution.reportNotSolved(
+      waiting.id,
+      detail.value.version - 1,
+      'The edge is cracking again',
+      [],
+    );
+    expect(stale.ok ? 'ok' : stale.error.code).toBe('CONFLICT');
+
+    const photo = await sita.issues.uploadPhoto({
+      id: crypto.randomUUID(),
+      userId: login.value.user.id,
+      mimeType: 'image/jpeg',
+      body: new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3, 0xff, 0xd9]),
+    });
+    if (!photo.ok) throw new Error(photo.error.message);
+    const answered = await sita.resolution.reportNotSolved(
+      waiting.id,
+      detail.value.version,
+      'The edge is cracking again',
+      [photo.value],
+    );
+    expect(answered.ok).toBe(true);
+    const after = await sita.issueReads.getIssue(waiting.id);
+    expect(after.ok && after.value?.status).toBe('REOPENED');
+    // Answering twice is refused.
+    const again = await sita.resolution.confirmSolved(waiting.id, answered.ok ? answered.value : 0);
+    expect(again.ok ? 'ok' : again.error.code).toBe('INVALID_TRANSITION');
   });
 });

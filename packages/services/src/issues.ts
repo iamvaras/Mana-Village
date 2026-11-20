@@ -84,6 +84,15 @@ export interface IssuesService {
   unsupport(issueId: string): Promise<Result<number>>;
 }
 
+/** Photos already uploaded, in the shape the database functions take. */
+export const attachmentsPayload = (photos: readonly UploadedPhoto[]) =>
+  photos.map((p) => ({
+    id: p.id,
+    path: p.path,
+    ...(p.width ? { width: p.width } : {}),
+    ...(p.height ? { height: p.height } : {}),
+  }));
+
 export function photoPath(userId: string, id: string, mimeType: ImageMimeType): string {
   return `${userId}/${id}.${EXTENSION[mimeType]}`;
 }

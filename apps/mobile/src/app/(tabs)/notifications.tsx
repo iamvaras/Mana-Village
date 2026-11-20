@@ -12,7 +12,10 @@ import { services } from '@/lib/supabase';
 
 /** Routes created by the database that this version of the app can open. */
 function openRoute(n: AppNotification): void {
-  if (n.issueId) router.push({ pathname: '/issue/[id]', params: { id: n.issueId } });
+  if (!n.issueId) return;
+  if (n.type === 'RESOLUTION_CONFIRM_REQUEST' || n.type === 'RESOLUTION_REMINDER')
+    router.push({ pathname: '/issue/[id]/confirm', params: { id: n.issueId } });
+  else router.push({ pathname: '/issue/[id]', params: { id: n.issueId } });
 }
 
 export default function NotificationsScreen() {

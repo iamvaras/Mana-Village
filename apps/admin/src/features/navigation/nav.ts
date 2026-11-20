@@ -9,7 +9,7 @@ export interface NavItem {
   availableFrom: number;
 }
 
-export const CURRENT_PHASE = 8;
+export const CURRENT_PHASE = 9;
 
 export const NAV_ITEMS: readonly NavItem[] = [
   { label: 'Dashboard', href: '/', anyOf: ['analytics.view', 'issue.view_all'], availableFrom: 3 },

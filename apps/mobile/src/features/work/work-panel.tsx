@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Image, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Linking, StyleSheet, Text, View } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   PROGRESS_NOTE_MAX,
@@ -17,7 +17,8 @@ import { issueKeys } from '@/features/issues/hooks';
 import { useI18n } from '@/i18n/i18n-provider';
 import { services } from '@/lib/supabase';
 import { workKeys } from './hooks';
-import { MAX_WORK_PHOTOS, useWorkPhotos, type AddPhotoProblem } from './work-photos';
+import { PhotoAttacher } from '@/features/photos/photo-attacher';
+import { useAttachedPhotos } from '@/features/photos/attached-photos';
 
 type Mode = 'idle' | 'decline' | 'progress' | 'resolve';
 
@@ -29,7 +30,7 @@ export function WorkPanel({ item }: { item: WorkItem }) {
   const { s, f, errorText } = useI18n();
   const { session } = useSession();
   const queryClient = useQueryClient();
-  const photos = useWorkPhotos();
+  const photos = useAttachedPhotos();
   const [mode, setMode] = useState<Mode>('idle');
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
@@ -41,12 +42,6 @@ export function WorkPanel({ item }: { item: WorkItem }) {
   const [knownVersion, setKnownVersion] = useState(item.version);
   const version = Math.max(knownVersion, item.version);
   const steps = workSteps(item);
-
-  const photoProblem: Record<AddPhotoProblem, string> = {
-    camera_denied: s.work.cameraDenied,
-    photos_denied: s.work.photosDenied,
-    failed: s.work.photoFailed,
-  };
 
   function open(next: Mode) {
     setMode(next);
@@ -96,14 +91,8 @@ export function WorkPanel({ item }: { item: WorkItem }) {
     const userId = session?.user.id;
     if (!userId) return { ok: false, error: { code: 'AUTH_REQUIRED', message: 'signed out' } };
     return photos.upload(userId, (n, total) =>
-      setBusyLabel(f(s.work.uploading, { n: String(n), total: String(total) })),
+      setBusyLabel(f(s.attach.uploading, { n: String(n), total: String(total) })),
     );
-  }
-
-  async function addPhoto(source: 'camera' | 'library') {
-    setError(null);
-    const problem = await photos.add(source);
-    if (problem) setError(photoProblem[problem]);
   }
 
   function submitDecline() {
@@ -219,49 +208,7 @@ export function WorkPanel({ item }: { item: WorkItem }) {
             maxLength={PROGRESS_NOTE_MAX}
             multiline
           />
-          {photos.photos.length > 0 ? (
-            <View style={styles.photos}>
-              {photos.photos.map((p) => (
-                <View key={p.id} style={styles.photoBox}>
-                  <Image source={{ uri: p.uri }} style={styles.photo} />
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={s.work.removePhoto}
-                    disabled={busy}
-                    onPress={() => photos.remove(p.id)}
-                  >
-                    <Text style={styles.remove}>{s.work.removePhoto}</Text>
-                  </Pressable>
-                </View>
-              ))}
-            </View>
-          ) : null}
-          <Body muted>
-            {f(s.work.photoCount, {
-              n: String(photos.photos.length),
-              max: String(MAX_WORK_PHOTOS),
-            })}
-          </Body>
-          {photos.photos.length < MAX_WORK_PHOTOS ? (
-            <View style={styles.row}>
-              <View style={styles.half}>
-                <Button
-                  variant="secondary"
-                  label={s.work.takePhoto}
-                  disabled={busy}
-                  onPress={() => void addPhoto('camera')}
-                />
-              </View>
-              <View style={styles.half}>
-                <Button
-                  variant="secondary"
-                  label={s.work.choosePhoto}
-                  disabled={busy}
-                  onPress={() => void addPhoto('library')}
-                />
-              </View>
-            </View>
-          ) : null}
+          <PhotoAttacher photos={photos} busy={busy} onError={setError} />
           <Button
             label={mode === 'progress' ? s.work.progressSend : s.work.resolveSend}
             busy={busy}
@@ -295,10 +242,4 @@ const styles = StyleSheet.create({
   actions: { gap: space.sm },
   form: { gap: space.sm },
   formTitle: { fontSize: 16, fontWeight: '600', color: colors.text },
-  photos: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
-  photoBox: { alignItems: 'center', gap: 2 },
-  photo: { width: 72, height: 72, borderRadius: 8, backgroundColor: colors.border },
-  remove: { fontSize: 13, color: colors.danger },
-  row: { flexDirection: 'row', gap: space.sm },
-  half: { flex: 1 },
 });
