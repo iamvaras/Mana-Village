@@ -74,6 +74,14 @@ function RootNavigator() {
           options={{ headerShown: true, headerBackTitle: '' }}
         />
         <Stack.Screen
+          name="announcements/index"
+          options={{ headerShown: true, headerBackTitle: '' }}
+        />
+        <Stack.Screen
+          name="announcements/[id]"
+          options={{ headerShown: true, headerBackTitle: '' }}
+        />
+        <Stack.Screen
           name="issue/[id]/confirm"
           options={{ headerShown: true, headerBackTitle: '' }}
         />

@@ -170,6 +170,15 @@ export const te: Strings = {
     VICE_PRESIDENT: 'ఉప సర్పంచ్',
     SUPER_ADMIN: 'నిర్వాహకుడు',
   },
+  announcements: {
+    title: 'ప్రకటనలు',
+    fromPanchayat: 'పంచాయతీ నుండి',
+    pinned: 'ముఖ్యమైనది',
+    seeAll: 'అన్ని ప్రకటనలు చూడండి',
+    emptyTitle: 'ప్రకటనలు లేవు',
+    emptyBody: 'పంచాయతీ వార్తలు ఇక్కడ కనిపిస్తాయి.',
+    notFound: 'ఈ ప్రకటన ఇప్పుడు అందుబాటులో లేదు.',
+  },
   confirm: {
     title: 'సమస్య పరిష్కారమైందా?',
     askCard: 'ఈ సమస్య పరిష్కరించబడిందని పంచాయతీ చెబుతోంది. దయచేసి చూసి చెప్పండి.',

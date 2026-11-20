@@ -1,6 +1,6 @@
 # Mana Village: Design Docs
 
-Status: **All Phase 0 questions answered (2026-11-20); docs updated to match. Phases 2–9 done; Phase 10 (push notifications) in review.**
+Status: **All Phase 0 questions answered (2026-11-20); docs updated to match. Phases 2–10 done; Phase 11 part 1 (announcements) in review.**
 
 Mana Village is an issue tracking, resolution and transparency system for village civic problems. It is not a complaint form. Every issue carries a permanent, reconstructable timeline of who did what and when.
 
@@ -130,3 +130,13 @@ These refine the design above; the code and these notes win where they differ.
 6. **Mobile:** the app asks for notification permission once after sign-in, registers the phone, unlinks it on sign-out, and has a "Phone notifications" switch in Profile. Tapping a notification opens the issue (or "Was it fixed?"); only known routes with a real id are accepted. Work alerts now open the issue screen (the old `/work/<id>` route is mapped there).
 7. **New dependencies:** `expo-notifications` and `expo-device` (both first-party Expo, listed in docs/architecture.md).
 8. **Not checked here:** real delivery to Android and iOS phones (the Phase 10 exit criterion). It needs an Expo account and project id, Firebase for Android and an Apple Developer account for iOS, and the functions deployed. Edge Functions also cannot run in this local setup, so the sending logic was tested on its own and the database side with pgTAP.
+
+## Changes made while building Phase 11 (part 1: announcements)
+
+1. **Phase 11 is split into three pull requests:** announcements; analytics and the audit log; users, categories and village settings.
+2. **Announcement functions** (migration `20261120002100`): `upsert_announcement` (create or edit; archived ones cannot be edited), `publish_announcement` (draft to published) and `archive_announcement` (taken down, kept for the record, unpinned). All need `announcement.manage` for that village and are audited by the existing trigger. No new tables or columns.
+3. **Publishing can alert residents:** one in-app alert (and so a push) to every active resident whose home village it is, in their own language, unless the author unticks "Alert residents". The author is not alerted.
+4. **English text is required; Telugu is optional.** Readers whose language is Telugu see the Telugu text when it exists, otherwise the English.
+5. **"Show until" date (optional):** after it, residents no longer see the announcement; the admin list shows it as "Ended".
+6. **Mobile:** the Home tab shows the top announcement (pinned first, then newest) with "See all", plus a list and a detail screen. Announcement alerts open the detail screen.
+7. **Admin menu:** items whose screens come in a later Phase 11 pull request (Users, Categories, Analytics, Audit Logs, Settings) stay marked "coming soon".

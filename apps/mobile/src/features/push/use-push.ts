@@ -7,9 +7,12 @@ import { issueKeys } from '@/features/issues/hooks';
 import { registerForPush } from './push';
 import { pushTarget } from './push-route';
 
-function open(data: unknown) {
+/** Opens the screen a notification points to (also used by the Alerts list). */
+export function openPushTarget(data: unknown) {
   const target = pushTarget(data);
-  if (target.screen === 'confirm')
+  if (target.screen === 'announcement')
+    router.push({ pathname: '/announcements/[id]', params: { id: target.id } });
+  else if (target.screen === 'confirm')
     router.push({ pathname: '/issue/[id]/confirm', params: { id: target.id } });
   else if (target.screen === 'issue')
     router.push({ pathname: '/issue/[id]', params: { id: target.id } });
@@ -37,7 +40,7 @@ export function usePush() {
   useEffect(() => {
     if (!ready || !last) return;
     if (last.actionIdentifier !== Notifications.DEFAULT_ACTION_IDENTIFIER) return;
-    open(last.notification.request.content.data);
+    openPushTarget(last.notification.request.content.data);
     void Notifications.clearLastNotificationResponseAsync();
   }, [ready, last]);
 
@@ -46,8 +49,10 @@ export function usePush() {
     const sub = Notifications.addNotificationReceivedListener((n) => {
       void queryClient.invalidateQueries({ queryKey: issueKeys.notifications });
       const target = pushTarget(n.request.content.data);
-      if (target.screen !== 'alerts')
+      if (target.screen === 'issue' || target.screen === 'confirm')
         void queryClient.invalidateQueries({ queryKey: issueKeys.detail(target.id) });
+      if (target.screen === 'announcement')
+        void queryClient.invalidateQueries({ queryKey: ['announcements'] });
     });
     return () => sub.remove();
   }, [ready, queryClient]);

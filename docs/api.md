@@ -39,7 +39,7 @@ Each takes `issue_id`, `expected_version`, plus the fields in [issue-workflow.md
 | `admin_get_user_contact` (user_id) | `user.view_contact`; always audited |
 | `upsert_department`, `set_department_active` | `department.manage` |
 | `upsert_category`, `set_category_active` | `category.manage` |
-| `upsert_announcement`, `publish_announcement`, `archive_announcement` | `announcement.manage` |
+| `upsert_announcement`, `publish_announcement` (id, notify = true; returns how many residents were alerted), `archive_announcement` | `announcement.manage` |
 | `set_role_permissions` (role_key, permission_keys[]) | `permission.manage` |
 | `update_village_settings` (village_id, settings) | `settings.manage` |
 

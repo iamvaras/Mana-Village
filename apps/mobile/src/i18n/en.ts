@@ -173,6 +173,15 @@ export const en = {
     VICE_PRESIDENT: 'Vice-President',
     SUPER_ADMIN: 'Administrator',
   },
+  announcements: {
+    title: 'Announcements',
+    fromPanchayat: 'From the Panchayat',
+    pinned: 'Pinned',
+    seeAll: 'See all announcements',
+    emptyTitle: 'No announcements',
+    emptyBody: 'News from the Panchayat will appear here.',
+    notFound: 'This announcement is no longer available.',
+  },
   confirm: {
     title: 'Was it fixed?',
     askCard: 'The Panchayat says this problem is solved. Please check and tell us.',

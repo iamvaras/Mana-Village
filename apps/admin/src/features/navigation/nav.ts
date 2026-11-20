@@ -7,9 +7,11 @@ export interface NavItem {
   anyOf: readonly PermissionKey[];
   /** Phase in which the screen is built. Items for later phases are shown disabled. */
   availableFrom: number;
+  /** A screen of the current phase that is not built yet (the phase ships in parts). */
+  pending?: true;
 }
 
-export const CURRENT_PHASE = 10;
+export const CURRENT_PHASE = 11;
 
 export const NAV_ITEMS: readonly NavItem[] = [
   { label: 'Dashboard', href: '/', anyOf: ['analytics.view', 'issue.view_all'], availableFrom: 3 },
@@ -21,23 +23,47 @@ export const NAV_ITEMS: readonly NavItem[] = [
     href: '/users',
     anyOf: ['user.manage', 'role.assign_admin'],
     availableFrom: 11,
+    pending: true,
   },
-  { label: 'Categories', href: '/categories', anyOf: ['category.manage'], availableFrom: 11 },
+  {
+    label: 'Categories',
+    href: '/categories',
+    anyOf: ['category.manage'],
+    availableFrom: 11,
+    pending: true,
+  },
   {
     label: 'Announcements',
     href: '/announcements',
     anyOf: ['announcement.manage'],
     availableFrom: 11,
   },
-  { label: 'Analytics', href: '/analytics', anyOf: ['analytics.view'], availableFrom: 11 },
-  { label: 'Audit Logs', href: '/audit-logs', anyOf: ['audit.view'], availableFrom: 11 },
+  {
+    label: 'Analytics',
+    href: '/analytics',
+    anyOf: ['analytics.view'],
+    availableFrom: 11,
+    pending: true,
+  },
+  {
+    label: 'Audit Logs',
+    href: '/audit-logs',
+    anyOf: ['audit.view'],
+    availableFrom: 11,
+    pending: true,
+  },
   {
     label: 'Settings',
     href: '/settings',
     anyOf: ['settings.manage', 'permission.manage', 'village.manage'],
     availableFrom: 11,
+    pending: true,
   },
 ];
+
+/** Built and linkable now (others show as "Soon"). */
+export const isNavItemReady = (item: NavItem) =>
+  item.availableFrom <= CURRENT_PHASE && !item.pending;
 
 export function visibleNavItems(permissions: PermissionSet): NavItem[] {
   return NAV_ITEMS.filter((item) => permissions.hasAny(...item.anyOf));

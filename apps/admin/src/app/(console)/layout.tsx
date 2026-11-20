@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { selectVillageAction } from '@/features/auth/actions';
 import { SignOutButton } from '@/features/auth/sign-out-button';
 import { requireStaff } from '@/features/auth/staff-context';
-import { CURRENT_PHASE, visibleNavItems } from '@/features/navigation/nav';
+import { isNavItemReady, visibleNavItems } from '@/features/navigation/nav';
 
 export default async function ConsoleLayout({ children }: { children: ReactNode }) {
   const ctx = await requireStaff();
@@ -19,7 +19,7 @@ export default async function ConsoleLayout({ children }: { children: ReactNode 
         <nav aria-label="Main" className="flex-1 px-3 py-4">
           <ul className="flex flex-col gap-1">
             {items.map((item) =>
-              item.availableFrom <= CURRENT_PHASE ? (
+              isNavItemReady(item) ? (
                 <li key={item.href}>
                   <Link
                     href={item.href}
