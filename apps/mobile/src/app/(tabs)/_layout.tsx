@@ -1,6 +1,7 @@
 import { router, Tabs } from 'expo-router';
 import { Text, type ColorValue } from 'react-native';
 import { colors } from '@/components/theme';
+import { useUnreadCount } from '@/features/issues/hooks';
 import { useI18n } from '@/i18n/i18n-provider';
 
 /** Simple text glyph icons; no icon library is added for four tabs. */
@@ -11,6 +12,9 @@ const icon = (glyph: string) =>
 
 export default function TabsLayout() {
   const { s } = useI18n();
+  const unread = useUnreadCount();
+  const badge =
+    unread.data && unread.data > 0 ? (unread.data > 99 ? '99+' : unread.data) : undefined;
   return (
     <Tabs
       screenOptions={{
@@ -35,7 +39,11 @@ export default function TabsLayout() {
       />
       <Tabs.Screen
         name="notifications"
-        options={{ title: s.tabs.notifications, tabBarIcon: icon('◔') }}
+        options={{
+          title: s.tabs.notifications,
+          tabBarIcon: icon('◔'),
+          ...(badge !== undefined ? { tabBarBadge: badge } : {}),
+        }}
       />
       <Tabs.Screen name="profile" options={{ title: s.tabs.profile, tabBarIcon: icon('◉') }} />
     </Tabs>

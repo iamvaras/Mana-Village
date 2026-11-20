@@ -4,7 +4,7 @@ Village civic issue tracking, resolution and transparency system. Citizens repor
 problems; village officials review, verify, assign and resolve them with photo proof;
 citizens confirm the result. Every step is permanently recorded with who did it and when.
 
-Design docs: [`docs/`](docs/index.md). Current phase: **Phase 4 (citizen issue reporting)**.
+Design docs: [`docs/`](docs/index.md). Current phase: **Phase 5 (issue details and timeline)**.
 
 ## Repository layout
 

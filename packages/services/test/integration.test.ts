@@ -4,7 +4,7 @@
  */
 import { createClient } from '@supabase/supabase-js';
 import { describe, expect, it } from 'vitest';
-import type { Database } from '@mana/core';
+import { buildTimeline, type Database } from '@mana/core';
 import { createServices } from '../src/index';
 
 const url = process.env.MANA_SUPABASE_URL;
@@ -126,5 +126,93 @@ describe.skipIf(!enabled)('services against local Supabase', () => {
     // The reporter cannot support their own issue.
     const own = await reporter.issues.support(created.value.id);
     expect(own.ok ? 'ok' : own.error.code).toBe('VALIDATION');
+  });
+
+  it('shows the issue, its timeline, photos and comments, and notifies the reporter', async () => {
+    const reporter = services();
+    const login = await reporter.auth.verifyOtp('9000000015', '123456');
+    if (!login.ok) throw new Error('login failed');
+    const userId = login.value.user.id;
+    const cats = await reporter.issues.listCategories();
+    const road = cats.ok ? cats.value.find((c) => c.key === 'ROAD') : undefined;
+    if (!road) throw new Error('no ROAD category');
+    const photo = await reporter.issues.uploadPhoto({
+      id: crypto.randomUUID(),
+      userId,
+      mimeType: 'image/jpeg',
+      body: new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 9, 9, 0xff, 0xd9]),
+    });
+    if (!photo.ok) throw new Error(photo.error.message);
+    const created = await reporter.issues.createIssue(
+      {
+        villageId: RMP,
+        categoryId: road.id,
+        title: 'Pothole near the bus stop',
+        locationText: 'Bus stop',
+        clientRequestId: crypto.randomUUID(),
+      },
+      [photo.value],
+    );
+    if (!created.ok) throw new Error(created.error.message);
+    const issueId = created.value.id;
+
+    const mine = await reporter.issueReads.listMine('open');
+    expect(mine.ok && mine.value.some((i) => i.id === issueId && i.isMine)).toBe(true);
+
+    const detail = await reporter.issueReads.getIssue(issueId);
+    expect(detail.ok && detail.value?.reporterName).toBe('Lakshmi');
+
+    const timeline = await reporter.issueReads.getTimeline(issueId);
+    if (!timeline.ok) throw new Error(timeline.error.message);
+    const entries = buildTimeline(timeline.value);
+    expect(entries[0]).toMatchObject({
+      kind: 'status',
+      toStatus: 'SUBMITTED',
+      photoCount: 1,
+      isMine: true,
+    });
+
+    const photos = await reporter.issueReads.listPhotos(issueId);
+    if (!photos.ok) throw new Error(photos.error.message);
+    expect(photos.value).toHaveLength(1);
+    const url = photos.value[0]?.url;
+    expect(url).toBeTruthy();
+    const fetched = await fetch(url ?? '');
+    expect(fetched.status).toBe(200);
+
+    // A neighbour supports it and comments; the reporter gets an in-app notification.
+    const neighbour = services();
+    await neighbour.auth.verifyOtp('9000000016', '123456');
+    const seen = await neighbour.issueReads.getIssue(issueId);
+    expect(seen.ok && seen.value?.reporterName).toBeNull();
+    expect((await neighbour.issueReads.addComment(issueId, 'Same here')).ok).toBe(false);
+    await neighbour.issues.support(issueId);
+    expect(
+      (await neighbour.issueReads.addComment(issueId, 'Same problem, my scooter fell here')).ok,
+    ).toBe(true);
+    const internal = await neighbour.issueReads.addComment(issueId, 'secret', 'INTERNAL');
+    expect(internal.ok ? 'ok' : internal.error.code).toBe('FORBIDDEN');
+
+    const comments = await reporter.issueReads.listComments(issueId);
+    expect(comments.ok && comments.value.map((c) => [c.body, c.authorName])).toEqual([
+      ['Same problem, my scooter fell here', null],
+    ]);
+
+    const before = await reporter.notifications.unreadCount();
+    const list = await reporter.notifications.list();
+    if (!list.ok || !before.ok) throw new Error('notifications failed');
+    const note = list.value.find((n) => n.issueId === issueId && n.type === 'NEW_COMMENT');
+    expect(note?.route).toBe(`/issue/${issueId}`);
+    if (!note) return;
+    expect((await reporter.notifications.markRead(note.id)).ok).toBe(true);
+    const after = await reporter.notifications.unreadCount();
+    expect(after.ok && after.value).toBe(before.value - 1);
+
+    // Someone from another village cannot see it at all.
+    const outsider = services();
+    await outsider.auth.verifyOtp('9000000021', '123456');
+    expect(await outsider.issueReads.getIssue(issueId)).toEqual({ ok: true, value: null });
+    const outsiderPhotos = await outsider.issueReads.listPhotos(issueId);
+    expect(outsiderPhotos.ok && outsiderPhotos.value).toEqual([]);
   });
 });
