@@ -1,6 +1,6 @@
 # Mana Village: Design Docs
 
-Status: **All Phase 0 questions answered (2026-11-20); docs updated to match. Awaiting approval to start Phase 2.** No application code has been written.
+Status: **All Phase 0 questions answered (2026-11-20); docs updated to match. Phase 2 done; Phase 3 (sign-in and permissions) in review.**
 
 Mana Village is an issue tracking, resolution and transparency system for village civic problems. It is not a complaint form. Every issue carries a permanent, reconstructable timeline of who did what and when.
 
@@ -55,3 +55,14 @@ These refine the design above; the code and these notes win where they differ.
 6. Added columns: `issues.client_request_id` (safe retries), `issue_categories.photo_required`, `permissions.citizen_grantable` (blocks granting internal-only permissions to citizens).
 7. Event times in history, comments and photos use the exact clock time so the timeline order is precise.
 8. Telugu notification and category texts are first drafts and need a native-speaker review before launch.
+
+## Changes made while building Phase 3
+
+1. **Admin security code is enforced in the database.** Roles marked `requires_mfa` (President, Vice-President, Secretary, Super Admin) only grant permissions when the session has passed the authenticator step (`aal2`). Signing in with the SMS code alone gives no admin powers, even through the API. Workers do not need it.
+2. **Staff accounts get a hidden placeholder email** (`<user id>@staff.mana-village.invalid`, never used for mail). Supabase needs an account label to create an authenticator code and staff sign in by phone only. The `prepare-mfa` Edge Function sets it, only for staff.
+3. **New database functions:** `get_my_roles`, `grant_role`, `revoke_role`, `set_user_status` (suspend / reactivate), `admin_get_user_contact` (reveals a phone number, audited), `admin_list_users`. Each checks permissions in the database and writes an audit row. Nobody can grant a role to themselves, CITIZEN cannot be granted, and only a Super Admin can create another Super Admin.
+4. **Invite staff** is the `invite-staff` Edge Function: it finds or creates the account for a phone number, then grants the role *as the inviting person*, so the same database permission check and audit apply.
+5. **Suspended users** see an "account suspended" screen in the mobile app and "no access" on the admin website; the database already refuses their actions.
+6. **Mobile session tokens** are stored only in the phone's secure keychain (split into small pieces because some phones limit one entry to about 2 KB).
+7. **Mobile translations** use a small typed dictionary (`apps/mobile/src/i18n`) instead of an i18n library; a test checks Telugu has every English key. Telugu text still needs a native-speaker review.
+8. Shared packages import without `.js` suffixes so both Next.js (Turbopack) and Expo (Metro) can bundle them.

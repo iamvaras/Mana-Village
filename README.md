@@ -4,14 +4,16 @@ Village civic issue tracking, resolution and transparency system. Citizens repor
 problems; village officials review, verify, assign and resolve them with photo proof;
 citizens confirm the result. Every step is permanently recorded with who did it and when.
 
-Design docs: [`docs/`](docs/index.md). Current phase: **Phase 2 (project structure + database)**.
+Design docs: [`docs/`](docs/index.md). Current phase: **Phase 3 (sign-in, roles and permissions)**.
 
 ## Repository layout
 
 ```
-apps/            mobile (Expo) and admin (Next.js), from Phase 3
+apps/mobile      citizen + worker app (Expo / React Native, expo-router)
+apps/admin       Panchayat staff website (Next.js)
 packages/core    shared TypeScript: enums, workflow rules, permission keys, validation, DB types
-supabase/        config, migrations, dev seed, database tests (pgTAP)
+packages/services  data access used by both apps (Supabase calls, error mapping); UI never calls Supabase directly
+supabase/        config, migrations, dev seed, database tests (pgTAP), Edge Functions
 docs/            product, architecture, database, permissions, workflow, API, UI/UX, security, testing
 ```
 
@@ -29,6 +31,19 @@ pnpm db:test         # database tests: RLS, permissions, workflow, history immut
 pnpm test            # unit tests (packages)
 pnpm typecheck && pnpm lint
 ```
+
+Run the apps against the local stack (copy each `.env.example` to `.env.local` and paste the
+anon key from `pnpm exec supabase status`):
+
+```bash
+pnpm --filter @mana/admin dev      # http://localhost:3000
+pnpm --filter @mana/mobile start   # Expo; on a phone use your computer's LAN IP in the URL
+```
+
+Admin sign-in is phone OTP, then a 6-digit code from an authenticator app (set up on first
+sign-in). The database only honours admin permissions after that second step. Setting up the
+authenticator calls the `prepare-mfa` Edge Function, so run `pnpm exec supabase functions serve`
+too when testing it locally.
 
 After changing a migration: `pnpm db:reset && pnpm db:types` and commit the updated
 `packages/core/src/types/database.ts`.
@@ -63,5 +78,6 @@ Phone OTP with fixed codes (local only, no SMS sent). Code: `123456`.
 
 ## Versions
 
-Pinned at the start of Phase 2: Node 22, pnpm 10.28, TypeScript 5.9, Supabase CLI 3.2.0,
-Postgres 17 (local), zod 4, vitest 3. Expo SDK and Next.js versions are pinned in Phase 3.
+Node 22, pnpm 10.28, TypeScript 5.9, Supabase CLI 3.2.0, Postgres 17 (local), zod 4, vitest 3,
+Next.js 16.4 + React 19.3 + Tailwind 4 (admin), Expo SDK 58 + React Native 0.88 + expo-router (mobile),
+TanStack Query 5 (mobile).
