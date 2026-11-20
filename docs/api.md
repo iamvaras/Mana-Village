@@ -46,7 +46,17 @@ Each takes `issue_id`, `expected_version`, plus the fields in [issue-workflow.md
 ### Analytics (read-only, `analytics.view`)
 `dashboard_stats(village_id, from, to)` → totals per status bucket, critical count, resolution rate, avg resolution time, pending count.
 `issues_by_category`, `issues_by_department`, `resolution_trend(village_id, interval)`.
-Definitions (approved 2026-11-20): **Open** = not in CLOSED/REJECTED/DUPLICATE. **Resolution rate** = CLOSED ÷ (all − REJECTED − DUPLICATE). **Average resolution time** = created_at → first RESOLVED, closed issues only.
+`analytics_report(village_id, from, to)` → trend, time-to-fix groups and reopened rate for the Analytics page.
+Definitions (signed off by the user 2026-11-20, Phase 11): every figure covers issues reported in the chosen range.
+- **Open** = not in CLOSED/REJECTED/DUPLICATE.
+- **Resolution rate** = CLOSED ÷ (all − REJECTED − DUPLICATE).
+- **Average resolution time** = created_at → the final RESOLVED (`resolved_at`), closed issues only. (Earlier drafts said "first RESOLVED"; a fix the resident rejected does not count as done.)
+- **Trend** = per week (per month when the range is longer than 120 days): issues reported that period, and issues closed that period.
+- **Time to fix groups** = closed issues by created_at → final RESOLVED: under 1 day, 1–3, 3–7, 7–30, over 30 days.
+- **Reopened rate** = issues ever marked solved that were reopened at least once (resident said "not solved", or staff reopened) ÷ issues ever marked solved.
+
+### Audit (read-only, `audit.view`)
+`list_audit_logs(village_id, area?, actor_id?, entity_id?, from?, to?, before_id?, limit?)` → newest first, with who did it and the issue number. `area` is issue, user, content or config. Page with `before_id`.
 
 ### Edge Functions
 | Function | Trigger | Does |

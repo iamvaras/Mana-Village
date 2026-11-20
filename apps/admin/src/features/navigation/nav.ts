@@ -38,20 +38,8 @@ export const NAV_ITEMS: readonly NavItem[] = [
     anyOf: ['announcement.manage'],
     availableFrom: 11,
   },
-  {
-    label: 'Analytics',
-    href: '/analytics',
-    anyOf: ['analytics.view'],
-    availableFrom: 11,
-    pending: true,
-  },
-  {
-    label: 'Audit Logs',
-    href: '/audit-logs',
-    anyOf: ['audit.view'],
-    availableFrom: 11,
-    pending: true,
-  },
+  { label: 'Analytics', href: '/analytics', anyOf: ['analytics.view'], availableFrom: 11 },
+  { label: 'Audit Logs', href: '/audit-logs', anyOf: ['audit.view'], availableFrom: 11 },
   {
     label: 'Settings',
     href: '/settings',

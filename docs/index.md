@@ -1,6 +1,6 @@
 # Mana Village: Design Docs
 
-Status: **All Phase 0 questions answered (2026-11-20); docs updated to match. Phases 2–10 done; Phase 11 part 1 (announcements) in review.**
+Status: **All Phase 0 questions answered (2026-11-20); docs updated to match. Phases 2–10 done; Phase 11 parts 1–2 (announcements; analytics and audit log) built, part 2 in review.**
 
 Mana Village is an issue tracking, resolution and transparency system for village civic problems. It is not a complaint form. Every issue carries a permanent, reconstructable timeline of who did what and when.
 
@@ -140,3 +140,11 @@ These refine the design above; the code and these notes win where they differ.
 5. **"Show until" date (optional):** after it, residents no longer see the announcement; the admin list shows it as "Ended".
 6. **Mobile:** the Home tab shows the top announcement (pinned first, then newest) with "See all", plus a list and a detail screen. Announcement alerts open the detail screen.
 7. **Admin menu:** items whose screens come in a later Phase 11 pull request (Users, Categories, Analytics, Audit Logs, Settings) stay marked "coming soon".
+
+## Changes made while building Phase 11 (part 2: analytics and audit log)
+
+1. **Analytics definitions signed off** by the user on 2026-11-20 (the Phase 11 exit criterion); the full list is in docs/api.md. One correction: average time to fix runs to the *final* "solved", not the first, which is what the Dashboard already computed.
+2. **New read-only functions:** `analytics_report` (migration `20261120002300`: trend, time-to-fix groups, reopened rate) and `list_audit_logs` (migration `20261120002200`). Both check the permission and the second sign-in step in the database. No new tables.
+3. **Analytics page:** 30 days / 90 days / 1 year / all time; reported, closed and reopened rate; a reported-and-closed line chart with a table view; a time-to-fix bar chart; category and department tables. Charts use `recharts` (already listed in docs/architecture.md).
+4. **Audit Logs page:** newest first, 50 at a time with "Older entries"; filter by kind of action and dates; click a person to see only their actions, or "history" to see one item; each row opens a before/after list of the fields that changed. Audit rows never contain phone numbers.
+5. **Not in this part:** CSV export (the docs mark it "later").

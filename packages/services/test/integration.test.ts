@@ -599,4 +599,30 @@ describe.skipIf(!enabled)('services against local Supabase', () => {
     const gone = await resident.announcements.get(saved.value);
     expect(gone).toEqual({ ok: true, value: null });
   });
+  it('the secretary reads the audit log and the analytics report; a resident cannot', async () => {
+    const secretary = await staffServices('9000000012', 'b0000000-0000-4000-8000-000000000012');
+    const log = await secretary.audit.list(RMP, { area: 'config', limit: 5 });
+    if (!log.ok) throw new Error(log.error.message);
+    expect(log.value.length).toBeGreaterThan(0);
+    expect(
+      log.value.every((e) =>
+        /^(village|department|category|role_permission|announcement)\./.test(e.action),
+      ),
+    ).toBe(true);
+    const first = log.value[0];
+    if (!first) throw new Error('no rows');
+    const older = await secretary.audit.list(RMP, { beforeId: first.id, limit: 5 });
+    expect(older.ok && older.value.every((e) => e.id < first.id)).toBe(true);
+
+    const report = await secretary.analytics.report(RMP);
+    if (!report.ok) throw new Error(report.error.message);
+    expect(report.value.trend.length).toBeGreaterThan(0);
+
+    const resident = services();
+    await resident.auth.verifyOtp('9000000015', '123456');
+    const denied = await resident.audit.list(RMP);
+    expect(denied.ok ? 'ok' : denied.error.code).toBe('FORBIDDEN');
+    const deniedReport = await resident.analytics.report(RMP);
+    expect(deniedReport.ok ? 'ok' : deniedReport.error.code).toBe('FORBIDDEN');
+  });
 });
