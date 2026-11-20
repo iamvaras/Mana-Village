@@ -1,6 +1,6 @@
 # Mana Village: Design Docs
 
-Status: **All Phase 0 questions answered (2026-11-20); docs updated to match. Phase 2 done; Phase 3 (sign-in and permissions) in review.**
+Status: **All Phase 0 questions answered (2026-11-20); docs updated to match. Phases 2–3 done; Phase 4 (citizen issue reporting) in review.**
 
 Mana Village is an issue tracking, resolution and transparency system for village civic problems. It is not a complaint form. Every issue carries a permanent, reconstructable timeline of who did what and when.
 
@@ -66,3 +66,12 @@ These refine the design above; the code and these notes win where they differ.
 6. **Mobile session tokens** are stored only in the phone's secure keychain (split into small pieces because some phones limit one entry to about 2 KB).
 7. **Mobile translations** use a small typed dictionary (`apps/mobile/src/i18n`) instead of an i18n library; a test checks Telugu has every English key. Telugu text still needs a native-speaker review.
 8. Shared packages import without `.js` suffixes so both Next.js (Turbopack) and Expo (Metro) can bundle them.
+
+## Changes made while building Phase 4
+
+1. **Report flow order** is Category → Photos → Location → Similar issues → Details → Review, as proposed in ui-ux.md §2.1. The similar-issues step is skipped when there is no GPS (the search needs a position).
+2. **Title is optional for residents.** If left empty, the app sends "<category> – <landmark>", which always fits the database limits. Many residents will not want to type a title.
+3. **Drafts** are a JSON file plus the compressed photos in the app's private document folder. A draft is saved after every change. It is shown only to the same account and village, and deleted after sending, after joining an existing issue with "I'm affected too", or when discarded.
+4. **Sending is resumable.** Photos upload one by one and each finished upload is remembered, so a retry skips them. The issue is created with the draft's `client_request_id`, so a lost reply can never create a second issue.
+5. **Photos** are resized to at most 1600 px and re-encoded as JPEG (quality 0.7). Re-encoding also removes EXIF data, including the GPS position stored inside the photo.
+6. **New first-party Expo modules** (listed in architecture.md): expo-image-picker, expo-image-manipulator, expo-location, expo-file-system, expo-crypto (for UUIDs).
