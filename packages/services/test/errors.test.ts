@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { friendlyMessage, run, toAppError } from '../src/index';
+import { dbDetail, friendlyMessage, run, toAppError } from '../src/index';
 
 describe('toAppError', () => {
   it('maps database MV_ codes', () => {
@@ -55,5 +55,17 @@ describe('run', () => {
       throw new TypeError('Failed to fetch');
     });
     expect(b.ok ? null : b.error.code).toBe('NETWORK');
+  });
+
+  it('turns database details into readable sentences', () => {
+    expect(
+      toAppError({ message: 'MV_VALIDATION: a department with this name already exists' }),
+    ).toEqual({
+      code: 'VALIDATION',
+      message: 'A department with this name already exists.',
+    });
+    expect(dbDetail('MV_FORBIDDEN: you cannot view workers here')).toBe(
+      'You cannot view workers here.',
+    );
   });
 });
