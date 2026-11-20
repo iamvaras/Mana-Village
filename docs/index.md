@@ -1,6 +1,6 @@
 # Mana Village: Design Docs
 
-Status: **All Phase 0 questions answered (2026-11-20); docs updated to match. Phases 2–3 done; Phase 4 (citizen issue reporting) in review.**
+Status: **All Phase 0 questions answered (2026-11-20); docs updated to match. Phases 2–4 done; Phase 5 (issue details and timeline) in review.**
 
 Mana Village is an issue tracking, resolution and transparency system for village civic problems. It is not a complaint form. Every issue carries a permanent, reconstructable timeline of who did what and when.
 
@@ -75,3 +75,12 @@ These refine the design above; the code and these notes win where they differ.
 4. **Sending is resumable.** Photos upload one by one and each finished upload is remembered, so a retry skips them. The issue is created with the draft's `client_request_id`, so a lost reply can never create a second issue.
 5. **Photos** are resized to at most 1600 px and re-encoded as JPEG (quality 0.7). Re-encoding also removes EXIF data, including the GPS position stored inside the photo.
 6. **New first-party Expo modules** (listed in architecture.md): expo-image-picker, expo-image-manipulator, expo-location, expo-file-system, expo-crypto (for UUIDs).
+
+## Changes made while building Phase 5
+
+1. **Comment notifications come from a trigger** on `issue_comments` (migration `20261120001600`). Public comments notify the reporter, supporters and the assigned worker. Internal notes notify only the assigned worker(s). The author is never notified. Status-change notifications were already created inside the workflow functions.
+2. **Assignment acceptance uses the exact clock time** (trigger), so "accepted" sorts correctly in the timeline next to other events.
+3. **The timeline is built by `buildTimeline` in `packages/core`**, shared by both apps. Photos sent together with the report are folded into the "reported" entry ("Reported with 2 photos"), because in the database they are saved a moment before the SUBMITTED row.
+4. **Photos are shown through private links** (signed URLs, valid 1 hour). Storage checks the viewer may see the issue before signing.
+5. Residents can comment on issues they reported or support. On someone else's issue the app offers "I'm affected too" first.
+6. The admin dashboard shows the 10 latest reports, linking to the new issue page (details, photos, timeline, public comments and internal notes). The full All Issues table comes in Phase 6.

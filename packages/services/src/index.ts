@@ -3,7 +3,9 @@ import { createAdminService } from './admin';
 import { createAuthService } from './auth';
 import { createMfaService } from './mfa';
 import { createPermissionsService } from './permissions';
+import { createIssueReadsService } from './issue-reads';
 import { createIssuesService } from './issues';
+import { createNotificationsService } from './notifications';
 import { createProfileService } from './profile';
 import { createVillagesService } from './villages';
 
@@ -16,6 +18,8 @@ export * from './permissions';
 export * from './villages';
 export * from './admin';
 export * from './issues';
+export * from './issue-reads';
+export * from './notifications';
 
 /** All services bound to one Supabase client. Components use hooks that call these. */
 export function createServices(client: ManaClient) {
@@ -27,6 +31,8 @@ export function createServices(client: ManaClient) {
     villages: createVillagesService(client),
     admin: createAdminService(client),
     issues: createIssuesService(client),
+    issueReads: createIssueReadsService(client),
+    notifications: createNotificationsService(client),
   };
 }
 export type Services = ReturnType<typeof createServices>;

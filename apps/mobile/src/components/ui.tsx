@@ -150,8 +150,8 @@ export function CenteredState({
   action,
   loading = false,
 }: {
-  title?: string;
-  body?: string;
+  title?: string | undefined;
+  body?: string | undefined;
   action?: ReactNode;
   loading?: boolean;
 }) {
