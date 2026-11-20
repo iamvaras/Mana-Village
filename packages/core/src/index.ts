@@ -6,3 +6,4 @@ export * from './errors/index';
 export * from './format/index';
 export * from './types/index';
 export * from './timeline/index';
+export * from './issue-list/index';

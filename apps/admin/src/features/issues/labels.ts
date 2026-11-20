@@ -1,4 +1,4 @@
-import type { IssueStatus, TimelineEntry } from '@mana/core';
+import type { IssuePriority, IssueStatus, TimelineEntry } from '@mana/core';
 
 export const STATUS_LABEL: Readonly<Record<IssueStatus, string>> = {
   SUBMITTED: 'Submitted',
@@ -73,4 +73,31 @@ const STATUS_TONE: Readonly<Record<IssueStatus, string>> = {
 
 export function statusClass(status: IssueStatus): string {
   return STATUS_TONE[status];
+}
+
+export const PRIORITY_LABEL: Readonly<Record<IssuePriority, string>> = {
+  LOW: 'Low',
+  MEDIUM: 'Medium',
+  HIGH: 'High',
+  CRITICAL: 'Critical',
+};
+
+const PRIORITY_TONE: Readonly<Record<IssuePriority, string>> = {
+  LOW: 'text-neutral-500',
+  MEDIUM: 'text-neutral-700',
+  HIGH: 'font-medium text-amber-800',
+  CRITICAL: 'font-semibold text-red-700',
+};
+
+export function priorityClass(priority: IssuePriority): string {
+  return PRIORITY_TONE[priority];
+}
+
+/** Short age such as "45 min", "5 h" or "12 d". */
+export function ageText(iso: string, now: Date = new Date()): string {
+  const minutes = Math.max(0, Math.floor((now.getTime() - new Date(iso).getTime()) / 60_000));
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 48) return `${hours} h`;
+  return `${Math.floor(hours / 24)} d`;
 }
