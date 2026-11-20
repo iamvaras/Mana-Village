@@ -423,4 +423,65 @@ describe.skipIf(!enabled)('services against local Supabase', () => {
     },
     30_000,
   );
+
+  it('a worker sees only their work, restarts reopened work, posts a photo update and resolves', async () => {
+    const worker = services();
+    const login = await worker.auth.verifyOtp('9000000014', '123456');
+    if (!login.ok) throw new Error(login.error.message);
+    const userId = login.value.user.id;
+
+    const work = await worker.work.listMyWork();
+    if (!work.ok) throw new Error(work.error.message);
+    expect(work.value.every((w) => w.departmentName === 'Sanitation')).toBe(true);
+    // Fresh seed: a reopened issue to restart. On a re-run against the same database
+    // it may already be resolved, so fall back to work that is in progress.
+    const reopened =
+      work.value.find((w) => w.status === 'REOPENED') ??
+      work.value.find((w) => w.status === 'IN_PROGRESS');
+    if (!reopened) throw new Error('no Sanitation work left; reset the local database');
+    expect(reopened.assignedToMe).toBe(true);
+
+    let version = reopened.version;
+    if (reopened.status === 'REOPENED') {
+      const started = await worker.work.start(reopened.issueId, reopened.version);
+      if (!started.ok) throw new Error(started.error.message);
+      version = started.value;
+    }
+    const started = { value: version };
+
+    const upload = async () => {
+      const res = await worker.issues.uploadPhoto({
+        id: crypto.randomUUID(),
+        userId,
+        mimeType: 'image/jpeg',
+        body: new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 5, 6, 7, 0xff, 0xd9]),
+      });
+      if (!res.ok) throw new Error(res.error.message);
+      return res.value;
+    };
+    expect(
+      (await worker.work.addProgress(reopened.issueId, 'Bringing more gravel', [await upload()]))
+        .ok,
+    ).toBe(true);
+    const empty = await worker.work.resolve(reopened.issueId, started.value, 'Done', []);
+    expect(empty.ok ? 'ok' : empty.error.code).toBe('VALIDATION');
+    const resolved = await worker.work.resolve(
+      reopened.issueId,
+      started.value,
+      'Edge rebuilt with stones',
+      [await upload()],
+    );
+    expect(resolved.ok).toBe(true);
+
+    const photos = await worker.issueReads.listPhotos(reopened.issueId);
+    if (!photos.ok) throw new Error(photos.error.message);
+    // Earlier work cycles may already have completion photos; this run added one of each.
+    expect(photos.value.some((p) => p.kind === 'PROGRESS')).toBe(true);
+    expect(photos.value.filter((p) => p.kind === 'COMPLETION').length).toBeGreaterThanOrEqual(1);
+
+    // The citizen has no work list.
+    const citizen = services();
+    await citizen.auth.verifyOtp('9000000015', '123456');
+    expect(await citizen.work.listMyWork()).toEqual({ ok: true, value: [] });
+  });
 });

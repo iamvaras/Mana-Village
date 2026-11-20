@@ -767,6 +767,11 @@ isOneToOne: false
               "avg_resolution_hours": number,"closed": number,"department_id": string,"department_name": string,"open": number,"total": number
             }[]
                            },
+"list_my_work":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "assigned_at": string,"assigned_to_me": boolean,"assignment_id": string,"assignment_note": string,"assignment_status": Database["public"]['Enums']["assignment_status"],"category_name": string,"category_name_local": string,"department_name": string,"due_at": string,"issue_id": string,"issue_number": string,"last_status_change_at": string,"latitude": number,"location_text": string,"longitude": number,"priority": Database["public"]['Enums']["issue_priority"],"status": Database["public"]['Enums']["issue_status"],"title": string,"version": number,"village_id": string
+            }[]
+                           },
 "mark_all_notifications_read":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
