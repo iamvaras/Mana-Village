@@ -705,6 +705,9 @@ isOneToOne: false
               "completed_assignments": number,"department_id": string,"department_name": string,"display_name": string,"full_name": string,"granted_at": string,"open_assignments": number,"user_id": string,"user_role_id": string,"user_status": Database["public"]['Enums']["user_status"]
             }[]
                            },
+"analytics_report":
+{ Args: { "p_from"?: string,"p_to"?: string,"p_village_id": string }; Returns: Json
+                           },
 "archive_announcement":
 { Args: { "p_id": string }; Returns: undefined
                            },
@@ -768,6 +771,11 @@ isOneToOne: false
 "issues_by_department":
 { Args: { "p_from"?: string,"p_to"?: string,"p_village_id": string }; Returns: {
               "avg_resolution_hours": number,"closed": number,"department_id": string,"department_name": string,"open": number,"total": number
+            }[]
+                           },
+"list_audit_logs":
+{ Args: { "p_actor_id"?: string,"p_area"?: string,"p_before_id"?: number,"p_entity_id"?: string,"p_from"?: string,"p_limit"?: number,"p_to"?: string,"p_village_id": string }; Returns: {
+              "action": string,"actor_name": string,"actor_role_key": string,"actor_user_id": string,"after": Json,"before": Json,"entity_id": string,"entity_type": string,"id": number,"issue_number": string,"metadata": Json,"occurred_at": string
             }[]
                            },
 "list_my_work":
