@@ -542,4 +542,30 @@ describe.skipIf(!enabled)('services against local Supabase', () => {
     const again = await sita.resolution.confirmSolved(waiting.id, answered.ok ? answered.value : 0);
     expect(again.ok ? 'ok' : again.error.code).toBe('INVALID_TRANSITION');
   });
+
+  it('links a phone for push, turns phone notifications off and on, and unlinks on sign-out', async () => {
+    const client = createClient<Database>(url ?? '', anonKey ?? '', {
+      auth: { persistSession: false },
+    });
+    const ravi = createServices(client);
+    const login = await ravi.auth.verifyOtp('9000000016', '123456');
+    if (!login.ok) throw new Error(login.error.message);
+    const token = `ExponentPushToken[test-${crypto.randomUUID()}]`;
+
+    expect((await ravi.push.register('not-a-token', 'android')).ok).toBe(false);
+    expect(await ravi.push.register(token, 'android', '0.1.0')).toEqual({ ok: true, value: null });
+
+    expect(await ravi.push.setEnabled(false)).toEqual({ ok: true, value: null });
+    const off = await ravi.profile.getMyProfile();
+    expect(off.ok && off.value?.push_enabled).toBe(false);
+    await ravi.push.setEnabled(true);
+    const on = await ravi.profile.getMyProfile();
+    expect(on.ok && on.value?.push_enabled).toBe(true);
+
+    expect(await ravi.push.unregister(token)).toEqual({ ok: true, value: null });
+
+    // The delivery functions are for the server only.
+    const { error } = await client.rpc('push_claim_batch', { p_limit: 1 });
+    expect(error?.message ?? '').toMatch(/permission denied/i);
+  });
 });

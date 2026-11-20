@@ -51,12 +51,21 @@ Definitions (approved 2026-11-20): **Open** = not in CLOSED/REJECTED/DUPLICATE. 
 ### Edge Functions
 | Function | Trigger | Does |
 |---|---|---|
-| `send-push` | Database webhook on `notifications` INSERT | loads recipient's active push tokens, sends via Expo Push API in batches, sets `push_status`, stores ticket ids |
-| `push-receipts` | pg_cron every 15 min | checks Expo receipts, revokes `DeviceNotRegistered` tokens, retries transient failures (max 3) |
+| `send-push` | Woken through pg_net by a statement trigger on `notifications` INSERT, plus pg_cron every minute as a safety net | claims pending alerts (`push_claim_batch`), sends them via Expo Push in batches of 100, reports back (`push_record_send`): SENT with ticket ids, RETRY on network/429/5xx (max 3 attempts), FAILED otherwise; `DeviceNotRegistered` tokens are revoked at once |
+| `push-receipts` | pg_cron every 15 min (pg_net) | reads tickets 15 min–1 day old (`push_tickets_to_check`), asks Expo for receipts, revokes `DeviceNotRegistered` tokens (`push_record_receipts`) |
 | `invite-staff` | Admin web | verifies caller has `role.assign_worker`/`role.assign_admin`, creates or finds auth user by phone, then calls `grant_role` |
 
+Both push functions accept only calls carrying the `x-push-secret` header (JWT check off in `config.toml`); the database functions they call are granted to `service_role` only. Alerts are SKIPPED (not sent) when the person turned phone notifications off, has no active phone, or the alert is over a day old; the in-app Alerts list always has them. For a PRIVATE issue the lock-screen text is only the issue number.
+
+#### Turning on push (once per Supabase project)
+1. Expo: create an Expo account, run `eas init` in `apps/mobile` (adds `extra.eas.projectId` to app.json). Android: add a Firebase project, put `google-services.json` in `apps/mobile` and set `android.googleServicesFile`, upload the FCM V1 key in EAS. iOS: an Apple Developer account; EAS creates the push key.
+2. Deploy the functions: `supabase functions deploy send-push push-receipts`.
+3. Function secrets: `supabase secrets set PUSH_SECRET=<random> EXPO_ACCESS_TOKEN=<optional, from expo.dev>`.
+4. Vault (SQL editor): `select vault.create_secret('https://<ref>.supabase.co/functions/v1', 'edge_functions_url'); select vault.create_secret('<same random>', 'push_secret');`
+Until step 4 the database never calls out, which is why local and CI databases are safe.
+
 ### Scheduled jobs (pg_cron)
-`auto_close_resolved` (hourly), `resolution_reminders` (daily), `cleanup_orphan_uploads` (daily: storage objects with no `issue_attachments` row after 24 h).
+`auto_close_resolved` (hourly), `resolution_reminders` (daily), `mana-send-push` (every minute, only when alerts are pending), `mana-push-receipts` (every 15 min), `cleanup_orphan_uploads` (daily: storage objects with no `issue_attachments` row after 24 h).
 
 ## 3. Shared service layer (`packages/services`)
 

@@ -377,14 +377,14 @@ isOneToOne: false
                   ]
                 },"notifications": {
                   Row: {
-                    "body": string,"created_at": string,"data": NonNullable<Json>,"id": string,"issue_id": string | null,"push_attempts": number,"push_error": string | null,"push_status": Database["public"]['Enums']["push_status"],"read_at": string | null,"recipient_id": string,"title": string,"type": string,"village_id": string | null
+                    "body": string,"created_at": string,"data": NonNullable<Json>,"id": string,"issue_id": string | null,"push_attempts": number,"push_claimed_at": string | null,"push_error": string | null,"push_receipts_checked_at": string | null,"push_status": Database["public"]['Enums']["push_status"],"push_tickets": NonNullable<Json>,"pushed_at": string | null,"read_at": string | null,"recipient_id": string,"title": string,"type": string,"village_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "body": string,"created_at"?: string,"data"?: NonNullable<Json>,"id"?: string,"issue_id"?: string | null,"push_attempts"?: number,"push_error"?: string | null,"push_status"?: Database["public"]['Enums']["push_status"],"read_at"?: string | null,"recipient_id": string,"title": string,"type": string,"village_id"?: string | null
+                    "body": string,"created_at"?: string,"data"?: NonNullable<Json>,"id"?: string,"issue_id"?: string | null,"push_attempts"?: number,"push_claimed_at"?: string | null,"push_error"?: string | null,"push_receipts_checked_at"?: string | null,"push_status"?: Database["public"]['Enums']["push_status"],"push_tickets"?: NonNullable<Json>,"pushed_at"?: string | null,"read_at"?: string | null,"recipient_id": string,"title": string,"type": string,"village_id"?: string | null
                   }
                   Update: {
-                    "body"?: string,"created_at"?: string,"data"?: NonNullable<Json>,"id"?: string,"issue_id"?: string | null,"push_attempts"?: number,"push_error"?: string | null,"push_status"?: Database["public"]['Enums']["push_status"],"read_at"?: string | null,"recipient_id"?: string,"title"?: string,"type"?: string,"village_id"?: string | null
+                    "body"?: string,"created_at"?: string,"data"?: NonNullable<Json>,"id"?: string,"issue_id"?: string | null,"push_attempts"?: number,"push_claimed_at"?: string | null,"push_error"?: string | null,"push_receipts_checked_at"?: string | null,"push_status"?: Database["public"]['Enums']["push_status"],"push_tickets"?: NonNullable<Json>,"pushed_at"?: string | null,"read_at"?: string | null,"recipient_id"?: string,"title"?: string,"type"?: string,"village_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -545,14 +545,14 @@ isOneToOne: false
                   ]
                 },"users": {
                   Row: {
-                    "avatar_path": string | null,"created_at": string,"deleted_at": string | null,"display_name": string | null,"full_name": string,"home_village_id": string | null,"id": string,"preferred_language": string,"status": Database["public"]['Enums']["user_status"],"updated_at": string
+                    "avatar_path": string | null,"created_at": string,"deleted_at": string | null,"display_name": string | null,"full_name": string,"home_village_id": string | null,"id": string,"preferred_language": string,"push_enabled": boolean,"status": Database["public"]['Enums']["user_status"],"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "avatar_path"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"display_name"?: string | null,"full_name": string,"home_village_id"?: string | null,"id": string,"preferred_language"?: string,"status"?: Database["public"]['Enums']["user_status"],"updated_at"?: string
+                    "avatar_path"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"display_name"?: string | null,"full_name": string,"home_village_id"?: string | null,"id": string,"preferred_language"?: string,"push_enabled"?: boolean,"status"?: Database["public"]['Enums']["user_status"],"updated_at"?: string
                   }
                   Update: {
-                    "avatar_path"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"display_name"?: string | null,"full_name"?: string,"home_village_id"?: string | null,"id"?: string,"preferred_language"?: string,"status"?: Database["public"]['Enums']["user_status"],"updated_at"?: string
+                    "avatar_path"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"display_name"?: string | null,"full_name"?: string,"home_village_id"?: string | null,"id"?: string,"preferred_language"?: string,"push_enabled"?: boolean,"status"?: Database["public"]['Enums']["user_status"],"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -778,6 +778,22 @@ isOneToOne: false
 "mark_duplicate":
 { Args: { "p_duplicate_of": string,"p_expected_version": number,"p_issue_id": string,"p_note"?: string,"p_source"?: string }; Returns: number
                            },
+"push_claim_batch":
+{ Args: { "p_limit"?: number }; Returns: {
+              "body": string,"issue_id": string,"notification_id": string,"route": string,"title": string,"tokens": (string)[]
+            }[]
+                           },
+"push_record_receipts":
+{ Args: { "p_results": Json }; Returns: number
+                           },
+"push_record_send":
+{ Args: { "p_results": Json }; Returns: number
+                           },
+"push_tickets_to_check":
+{ Args: { "p_limit"?: number }; Returns: {
+              "notification_id": string,"ticket_id": string,"token": string
+            }[]
+                           },
 "reconsider_issue":
 { Args: { "p_expected_version": number,"p_issue_id": string,"p_reason": string,"p_source"?: string }; Returns: number
                            },
@@ -813,6 +829,9 @@ isOneToOne: false
                            },
 "set_issue_visibility":
 { Args: { "p_expected_version": number,"p_issue_id": string,"p_visibility": Database["public"]['Enums']["issue_visibility"] }; Returns: number
+                           },
+"set_push_enabled":
+{ Args: { "p_enabled": boolean }; Returns: undefined
                            },
 "set_user_status":
 { Args: { "p_reason": string,"p_status": Database["public"]['Enums']["user_status"],"p_user_id": string }; Returns: undefined

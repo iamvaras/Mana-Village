@@ -2,6 +2,7 @@ import { router, Tabs } from 'expo-router';
 import { Text, type ColorValue } from 'react-native';
 import { colors } from '@/components/theme';
 import { useUnreadCount } from '@/features/issues/hooks';
+import { usePush } from '@/features/push/use-push';
 import { useIsWorker } from '@/features/work/hooks';
 import { useI18n } from '@/i18n/i18n-provider';
 
@@ -14,6 +15,7 @@ const icon = (glyph: string) =>
 export default function TabsLayout() {
   const { s } = useI18n();
   const unread = useUnreadCount();
+  usePush();
   // Shown only to workers. Hiding the tab is for convenience; the database returns
   // nothing to anyone else.
   const worker = useIsWorker();

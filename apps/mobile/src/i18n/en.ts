@@ -306,6 +306,10 @@ export const en = {
     editName: 'Name',
     saved: 'Saved.',
     signOut: 'Sign out',
+    pushLabel: 'Phone notifications',
+    pushHint: 'Get a notification when your issues change. The Alerts tab always has every update.',
+    pushDenied: 'Notifications are blocked for Mana Village. Allow them in your phone settings.',
+    pushUnavailable: 'Phone notifications are not available in this version of the app.',
     privacy: 'Your phone number is never shown to other residents.',
   },
   suspended: {

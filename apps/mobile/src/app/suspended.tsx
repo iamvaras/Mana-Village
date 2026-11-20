@@ -1,6 +1,6 @@
 import { Button, CenteredState, Screen } from '@/components/ui';
+import { signOutAndUnlinkPhone } from '@/features/push/push';
 import { useI18n } from '@/i18n/i18n-provider';
-import { services } from '@/lib/supabase';
 
 export default function SuspendedScreen() {
   const { s } = useI18n();
@@ -13,7 +13,7 @@ export default function SuspendedScreen() {
           <Button
             variant="secondary"
             label={s.profile.signOut}
-            onPress={() => void services?.auth.signOut()}
+            onPress={() => void signOutAndUnlinkPhone()}
           />
         }
       />
