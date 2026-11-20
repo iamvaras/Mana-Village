@@ -1,6 +1,6 @@
 # Mana Village: Design Docs
 
-Status: **All Phase 0 questions answered (2026-11-20); docs updated to match. Phases 2–8 done; Phase 9 (resolution and confirmation) in review.**
+Status: **All Phase 0 questions answered (2026-11-20); docs updated to match. Phases 2–9 done; Phase 10 (push notifications) in review.**
 
 Mana Village is an issue tracking, resolution and transparency system for village civic problems. It is not a complaint form. Every issue carries a permanent, reconstructable timeline of who did what and when.
 
@@ -119,3 +119,14 @@ These refine the design above; the code and these notes win where they differ.
 3. **Admin issue page:** **Close without the resident** (only for a solved issue, reason required and shown to the resident) and **Reopen** (solved or closed issue, reason required).
 4. **Reopening a closed issue does not hand it back to the worker by itself.** Closing finishes the earlier assignment, so the secretary assigns it again (the page says so). When the resident says "not solved", the same worker keeps the work and can restart straight away.
 5. Photo picking for workers and residents now shares one component.
+
+## Changes made while building Phase 10
+
+1. **Push delivery runs through database functions** (migration `20261120002000`): `push_claim_batch`, `push_record_send`, `push_tickets_to_check`, `push_record_receipts`, callable by the service role only. The two Edge Functions (`send-push`, `push-receipts`) only talk to Expo and report back. No new tables; small columns were added to `notifications` (tickets, claim and send times) and one to `users` (`push_enabled`, the Settings switch, which the docs listed but had no column for).
+2. **Waking `send-push`:** instead of a dashboard Database Webhook (which lives outside migrations), a statement trigger on `notifications` calls the function through `pg_net`, and pg_cron re-wakes it every minute while alerts are pending. The function URL and a shared secret are read from Supabase Vault; without them nothing is called, so local and test databases stay offline. Setup steps are in docs/api.md.
+3. **Retries happen when sending** (network error, rate limit, Expo server error; at most 3 attempts). Receipts are used to find and revoke phones that no longer exist. Resending after a bad receipt was left out, because it could send the same alert twice to phones that did get it.
+4. **Alerts that cannot or should not be delivered are marked SKIPPED:** phone notifications turned off, no active phone, suspended account, or older than a day. The Alerts tab still shows them.
+5. **Privacy:** for a PRIVATE issue the lock-screen text is only the issue number. Push text never has phone numbers.
+6. **Mobile:** the app asks for notification permission once after sign-in, registers the phone, unlinks it on sign-out, and has a "Phone notifications" switch in Profile. Tapping a notification opens the issue (or "Was it fixed?"); only known routes with a real id are accepted. Work alerts now open the issue screen (the old `/work/<id>` route is mapped there).
+7. **New dependencies:** `expo-notifications` and `expo-device` (both first-party Expo, listed in docs/architecture.md).
+8. **Not checked here:** real delivery to Android and iOS phones (the Phase 10 exit criterion). It needs an Expo account and project id, Firebase for Android and an Apple Developer account for iOS, and the functions deployed. Edge Functions also cannot run in this local setup, so the sending logic was tested on its own and the database side with pgTAP.

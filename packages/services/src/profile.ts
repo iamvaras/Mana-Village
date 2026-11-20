@@ -20,6 +20,8 @@ const profileRowSchema = z.object({
   preferred_language: z.enum(LANGUAGES),
   status: z.enum(USER_STATUSES),
   phone: z.string().nullable(),
+  /** Older databases do not send it; phone notifications are on by default. */
+  push_enabled: z.boolean().default(true),
   roles: z.array(
     z.object({
       role: z.enum(ROLE_KEYS),

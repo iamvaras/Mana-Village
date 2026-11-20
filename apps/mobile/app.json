@@ -37,6 +37,12 @@
         {
           "locationWhenInUsePermission": "Mana Village uses your location only when you report a problem, so the Panchayat can find it."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#1F7A4A"
+        }
       ]
     ],
     "experiments": {
