@@ -568,4 +568,35 @@ describe.skipIf(!enabled)('services against local Supabase', () => {
     const { error } = await client.rpc('push_claim_batch', { p_limit: 1 });
     expect(error?.message ?? '').toMatch(/permission denied/i);
   });
+
+  it('the secretary writes, publishes and archives an announcement that residents read', async () => {
+    const secretary = await staffServices('9000000012', 'b0000000-0000-4000-8000-000000000012');
+    const bad = await secretary.announcements.save(RMP, { title: 'Hi', body: '' });
+    expect(bad.ok ? 'ok' : bad.error.code).toBe('VALIDATION');
+    const saved = await secretary.announcements.save(RMP, {
+      title: 'Gram Sabha on Monday',
+      body: 'Meeting at the Panchayat office at 10am.',
+      titleLocal: 'సోమవారం గ్రామసభ',
+      isPinned: true,
+    });
+    if (!saved.ok) throw new Error(saved.error.message);
+
+    const resident = services();
+    await resident.auth.verifyOtp('9000000015', '123456');
+    const before = await resident.announcements.listPublished(RMP);
+    expect(before.ok && before.value.some((a) => a.id === saved.value)).toBe(false);
+
+    const published = await secretary.announcements.publish(saved.value, false);
+    expect(published).toEqual({ ok: true, value: 0 });
+    const after = await resident.announcements.listPublished(RMP);
+    if (!after.ok) throw new Error(after.error.message);
+    expect(after.value[0]?.isPinned).toBe(true);
+    expect(after.value.some((a) => a.id === saved.value)).toBe(true);
+    const forbidden = await resident.announcements.archive(saved.value);
+    expect(forbidden.ok ? 'ok' : forbidden.error.code).toBe('FORBIDDEN');
+
+    expect((await secretary.announcements.archive(saved.value)).ok).toBe(true);
+    const gone = await resident.announcements.get(saved.value);
+    expect(gone).toEqual({ ok: true, value: null });
+  });
 });

@@ -705,6 +705,9 @@ isOneToOne: false
               "completed_assignments": number,"department_id": string,"department_name": string,"display_name": string,"full_name": string,"granted_at": string,"open_assignments": number,"user_id": string,"user_role_id": string,"user_status": Database["public"]['Enums']["user_status"]
             }[]
                            },
+"archive_announcement":
+{ Args: { "p_id": string }; Returns: undefined
+                           },
 "assign_issue":
 { Args: { "p_assignee_user_id"?: string,"p_department_id": string,"p_due_at"?: string,"p_expected_version": number,"p_issue_id": string,"p_note"?: string,"p_reason"?: string,"p_source"?: string }; Returns: number
                            },
@@ -778,6 +781,9 @@ isOneToOne: false
 "mark_duplicate":
 { Args: { "p_duplicate_of": string,"p_expected_version": number,"p_issue_id": string,"p_note"?: string,"p_source"?: string }; Returns: number
                            },
+"publish_announcement":
+{ Args: { "p_id": string,"p_notify"?: boolean }; Returns: number
+                           },
 "push_claim_batch":
 { Args: { "p_limit"?: number }; Returns: {
               "body": string,"issue_id": string,"notification_id": string,"route": string,"title": string,"tokens": (string)[]
@@ -847,6 +853,9 @@ isOneToOne: false
                            },
 "unsupport_issue":
 { Args: { "p_issue_id": string }; Returns: number
+                           },
+"upsert_announcement":
+{ Args: { "p_body": string,"p_body_local"?: string,"p_expires_at"?: string,"p_id"?: string,"p_is_pinned"?: boolean,"p_title": string,"p_title_local"?: string,"p_village_id": string }; Returns: string
                            },
 "upsert_department":
 { Args: { "p_description"?: string,"p_id"?: string,"p_name": string,"p_name_local"?: string,"p_village_id": string }; Returns: string

@@ -1,6 +1,8 @@
 import { router } from 'expo-router';
 import { Body, Button, Card, Screen, Title } from '@/components/ui';
 import { useReadyProfile } from '@/features/auth/session-provider';
+import { AnnouncementCard } from '@/features/announcements/announcement-card';
+import { useAnnouncements } from '@/features/announcements/hooks';
 import { useVillages, villageLabel } from '@/features/profile/use-villages';
 import { useI18n } from '@/i18n/i18n-provider';
 
@@ -9,6 +11,8 @@ export default function HomeScreen() {
   const profile = useReadyProfile();
   const villages = useVillages();
   const village = villages.data?.find((v) => v.id === profile.home_village_id);
+  const announcements = useAnnouncements(profile.home_village_id);
+  const top = announcements.data?.[0];
 
   return (
     <Screen>
@@ -20,6 +24,19 @@ export default function HomeScreen() {
         <Body muted>{s.home.reportHint}</Body>
         <Button label={s.home.reportTitle} onPress={() => router.push('/report')} />
       </Card>
+      {top ? (
+        <>
+          <Body muted>{s.announcements.fromPanchayat}</Body>
+          <AnnouncementCard item={top} />
+          {(announcements.data?.length ?? 0) > 1 ? (
+            <Button
+              variant="link"
+              label={s.announcements.seeAll}
+              onPress={() => router.push('/announcements')}
+            />
+          ) : null}
+        </>
+      ) : null}
     </Screen>
   );
 }

@@ -10,6 +10,9 @@ describe('tapped phone notification', () => {
   it('opens "Was it fixed?" for confirmation alerts', () => {
     expect(pushTarget({ route: `/issue/${id}/confirm` })).toEqual({ screen: 'confirm', id });
   });
+  it('opens an announcement', () => {
+    expect(pushTarget({ route: `/announcements/${id}` })).toEqual({ screen: 'announcement', id });
+  });
   it('sends old worker links to the issue screen', () => {
     expect(pushTarget({ route: `/work/${id}` })).toEqual({ screen: 'issue', id });
   });
