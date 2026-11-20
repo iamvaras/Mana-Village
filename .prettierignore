@@ -4,3 +4,4 @@ supabase/seed
 supabase/tests
 packages/core/src/types/database.ts
 docs
+apps/admin/next-env.d.ts

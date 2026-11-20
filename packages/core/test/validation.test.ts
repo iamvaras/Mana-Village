@@ -5,7 +5,7 @@ import {
   createIssueSchema,
   formatIssueNumber,
   parseIssueNumber,
-} from '../src/index.js';
+} from '../src/index';
 
 const base = {
   villageId: 'a0000000-0000-4000-8000-000000000001',
@@ -71,5 +71,22 @@ describe('issue numbers and errors', () => {
     expect(codeFromDbMessage('MV_FORBIDDEN: missing permission issue.verify')).toBe('FORBIDDEN');
     expect(codeFromDbMessage('MV_CONFLICT: changed')).toBe('CONFLICT');
     expect(codeFromDbMessage('something else')).toBe('UNKNOWN');
+  });
+});
+
+import { formatIndianPhone, normalizeIndianPhone } from '../src/index';
+
+describe('Indian phone numbers', () => {
+  it('normalizes common formats', () => {
+    expect(normalizeIndianPhone('98765 43210')).toBe('919876543210');
+    expect(normalizeIndianPhone('+91 98765-43210')).toBe('919876543210');
+    expect(normalizeIndianPhone('919876543210')).toBe('919876543210');
+  });
+  it('rejects invalid numbers', () => {
+    expect(normalizeIndianPhone('12345')).toBeNull();
+    expect(normalizeIndianPhone('5876543210')).toBeNull();
+  });
+  it('formats for display', () => {
+    expect(formatIndianPhone('919876543210')).toBe('+91 98765 43210');
   });
 });

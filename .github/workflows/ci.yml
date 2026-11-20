@@ -24,6 +24,19 @@ jobs:
       - run: pnpm lint
       - run: pnpm format:check
       - run: pnpm test
+      - name: Build admin website
+        run: pnpm --filter @mana/admin build
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+          NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder
+      - name: Bundle mobile app (Android)
+        working-directory: apps/mobile
+        run: pnpm exec expo export --platform android --output-dir /tmp/mobile-export
+        env:
+          CI: '1'
+          EXPO_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+          EXPO_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder
 
   database:
     name: Migrations and database tests
@@ -44,3 +57,7 @@ jobs:
         run: |
           pnpm exec supabase gen types typescript --local > /tmp/database.ts
           diff -u packages/core/src/types/database.ts /tmp/database.ts
+      - name: Services integration tests (real API, seeded users)
+        run: |
+          eval "$(pnpm exec supabase status -o env | grep -E '^(API_URL|ANON_KEY)=')"
+          MANA_SUPABASE_URL="$API_URL" MANA_SUPABASE_ANON_KEY="$ANON_KEY" pnpm --filter @mana/services test

@@ -481,14 +481,14 @@ isOneToOne: false
                   ]
                 },"roles": {
                   Row: {
-                    "created_at": string,"description": string | null,"id": string,"is_system": boolean,"key": string,"name": string,"scope": Database["public"]['Enums']["role_scope"]
+                    "created_at": string,"description": string | null,"id": string,"is_system": boolean,"key": string,"name": string,"requires_mfa": boolean,"scope": Database["public"]['Enums']["role_scope"]
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"description"?: string | null,"id"?: string,"is_system"?: boolean,"key": string,"name": string,"scope"?: Database["public"]['Enums']["role_scope"]
+                    "created_at"?: string,"description"?: string | null,"id"?: string,"is_system"?: boolean,"key": string,"name": string,"requires_mfa"?: boolean,"scope"?: Database["public"]['Enums']["role_scope"]
                   }
                   Update: {
-                    "created_at"?: string,"description"?: string | null,"id"?: string,"is_system"?: boolean,"key"?: string,"name"?: string,"scope"?: Database["public"]['Enums']["role_scope"]
+                    "created_at"?: string,"description"?: string | null,"id"?: string,"is_system"?: boolean,"key"?: string,"name"?: string,"requires_mfa"?: boolean,"scope"?: Database["public"]['Enums']["role_scope"]
                   }
                   Relationships: [
                     
@@ -687,6 +687,14 @@ isOneToOne: false
 "add_progress_update":
 { Args: { "p_attachments"?: Json,"p_issue_id": string,"p_note"?: string }; Returns: undefined
                            },
+"admin_get_user_contact":
+{ Args: { "p_issue_id"?: string,"p_user_id": string }; Returns: string
+                           },
+"admin_list_users":
+{ Args: { "p_limit"?: number,"p_offset"?: number,"p_role_key"?: string,"p_search"?: string,"p_village_id": string }; Returns: {
+              "created_at": string,"display_name": string,"full_name": string,"id": string,"roles": Json,"status": Database["public"]['Enums']["user_status"]
+            }[]
+                           },
 "assign_issue":
 { Args: { "p_assignee_user_id"?: string,"p_department_id": string,"p_due_at"?: string,"p_expected_version": number,"p_issue_id": string,"p_note"?: string,"p_reason"?: string,"p_source"?: string }; Returns: number
                            },
@@ -724,6 +732,14 @@ isOneToOne: false
                            },
 "get_my_profile":
 { Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"get_my_roles":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "active_now": boolean,"department_id": string,"requires_mfa": boolean,"role_key": string,"village_id": string,"village_name": string
+            }[]
+                           },
+"grant_role":
+{ Args: { "p_department_id"?: string,"p_reason"?: string,"p_role_key": string,"p_user_id": string,"p_village_id"?: string }; Returns: string
                            },
 "hide_attachment":
 { Args: { "p_attachment_id": string,"p_reason": string }; Returns: undefined
@@ -765,11 +781,23 @@ isOneToOne: false
 "revoke_push_token":
 { Args: { "p_token": string }; Returns: undefined
                            },
+"revoke_role":
+{ Args: { "p_reason": string,"p_user_role_id": string }; Returns: undefined
+                           },
+"service_ensure_profile":
+{ Args: { "p_full_name": string,"p_user_id": string,"p_village_id": string }; Returns: undefined
+                           },
+"service_find_user_by_phone":
+{ Args: { "p_phone": string }; Returns: string
+                           },
 "set_issue_priority":
 { Args: { "p_expected_version": number,"p_issue_id": string,"p_priority": Database["public"]['Enums']["issue_priority"] }; Returns: number
                            },
 "set_issue_visibility":
 { Args: { "p_expected_version": number,"p_issue_id": string,"p_visibility": Database["public"]['Enums']["issue_visibility"] }; Returns: number
+                           },
+"set_user_status":
+{ Args: { "p_reason": string,"p_status": Database["public"]['Enums']["user_status"],"p_user_id": string }; Returns: undefined
                            },
 "start_review":
 { Args: { "p_expected_version": number,"p_issue_id": string,"p_source"?: string }; Returns: number

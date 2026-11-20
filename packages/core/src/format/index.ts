@@ -28,3 +28,19 @@ export function formatTimelineTime(
     timeZone,
   }).format(new Date(iso));
 }
+
+/**
+ * Normalize an Indian mobile number to Supabase Auth format: "91XXXXXXXXXX".
+ * Accepts "98765 43210", "+91 98765-43210", "919876543210". Returns null if invalid.
+ */
+export function normalizeIndianPhone(input: string): string | null {
+  const digits = input.replace(/\D/g, '');
+  const local = digits.length === 12 && digits.startsWith('91') ? digits.slice(2) : digits;
+  return /^[6-9]\d{9}$/.test(local) ? `91${local}` : null;
+}
+
+/** "919876543210" → "+91 98765 43210" for display. */
+export function formatIndianPhone(normalized: string): string {
+  const local = normalized.startsWith('91') ? normalized.slice(2) : normalized;
+  return `+91 ${local.slice(0, 5)} ${local.slice(5)}`;
+}

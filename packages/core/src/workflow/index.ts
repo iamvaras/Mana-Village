@@ -1,5 +1,5 @@
-import type { IssueStatus } from '../enums/index.js';
-import type { PermissionKey } from '../permissions/index.js';
+import type { IssueStatus } from '../enums/index';
+import type { PermissionKey } from '../permissions/index';
 
 /**
  * Issue workflow actions and their allowed status transitions.
