@@ -3,12 +3,14 @@
  * MANA_SUPABASE_ANON_KEY are set (CI database job). Skipped otherwise.
  */
 import { createClient } from '@supabase/supabase-js';
+import { createHmac } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
-import { buildTimeline, type Database } from '@mana/core';
+import { DEFAULT_ISSUE_LIST_QUERY, buildTimeline, type Database } from '@mana/core';
 import { createServices } from '../src/index';
 
 const url = process.env.MANA_SUPABASE_URL;
 const anonKey = process.env.MANA_SUPABASE_ANON_KEY;
+const serviceKey = process.env.MANA_SUPABASE_SERVICE_KEY;
 const enabled = Boolean(url && anonKey);
 const RMP = 'a0000000-0000-4000-8000-000000000001';
 
@@ -18,6 +20,59 @@ function services() {
   });
   return createServices(client);
 }
+
+/** RFC 6238 code for a base32 secret (what an authenticator app shows). */
+function totp(secret: string, at = Date.now()): string {
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+  let bits = '';
+  for (const ch of secret.replace(/=+$/, ''))
+    bits += alphabet.indexOf(ch).toString(2).padStart(5, '0');
+  const key = Buffer.from((bits.match(/.{8}/g) ?? []).map((b) => parseInt(b, 2)));
+  const counter = Buffer.alloc(8);
+  counter.writeBigUInt64BE(BigInt(Math.floor(at / 30_000)));
+  const h = createHmac('sha1', key).update(counter).digest();
+  const o = (h[h.length - 1] ?? 0) & 15;
+  return String((h.readUInt32BE(o) & 0x7fffffff) % 1_000_000).padStart(6, '0');
+}
+
+/**
+ * Signs a seeded staff member in with phone OTP and a fresh authenticator factor,
+ * the way the admin website does (prepare-mfa sets the placeholder email first).
+ */
+async function staffServices(phone: string, userId: string) {
+  const admin = createClient<Database>(url ?? '', serviceKey ?? '', {
+    auth: { persistSession: false },
+  });
+  await admin.auth.admin.updateUserById(userId, {
+    email: `${userId}@staff.mana-village.invalid`,
+    email_confirm: true,
+  });
+  const existing = await admin.auth.admin.mfa.listFactors({ userId });
+  for (const f of existing.data?.factors ?? []) {
+    await admin.auth.admin.mfa.deleteFactor({ id: f.id, userId });
+  }
+
+  const client = createClient<Database>(url ?? '', anonKey ?? '', {
+    auth: { persistSession: false },
+  });
+  const s = createServices(client);
+  const login = await s.auth.verifyOtp(phone, '123456');
+  if (!login.ok) throw new Error(login.error.message);
+  const enrolled = await client.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'test' });
+  if (enrolled.error) throw new Error(enrolled.error.message);
+  const verified = await client.auth.mfa.challengeAndVerify({
+    factorId: enrolled.data.id,
+    code: totp(enrolled.data.totp.secret),
+  });
+  if (verified.error) throw new Error(verified.error.message);
+  return s;
+}
+
+const until = async (check: () => boolean, ms = 10_000) => {
+  const end = Date.now() + ms;
+  while (!check() && Date.now() < end) await new Promise((r) => setTimeout(r, 100));
+  return check();
+};
 
 describe.skipIf(!enabled)('services against local Supabase', () => {
   it('signs a citizen in with phone OTP and loads profile + permissions', async () => {
@@ -215,4 +270,86 @@ describe.skipIf(!enabled)('services against local Supabase', () => {
     const outsiderPhotos = await outsider.issueReads.listPhotos(issueId);
     expect(outsiderPhotos.ok && outsiderPhotos.value).toEqual([]);
   });
+
+  it.skipIf(!serviceKey)(
+    'staff dashboard numbers agree with the All Issues list, and changes arrive live',
+    async () => {
+      const president = await staffServices('9000000010', 'b0000000-0000-4000-8000-000000000010');
+      const stats = await president.analytics.dashboard(RMP);
+      if (!stats.ok) throw new Error(stats.error.message);
+      expect(stats.value.total).toBeGreaterThanOrEqual(13);
+
+      const count = async (changes: Partial<typeof DEFAULT_ISSUE_LIST_QUERY>) => {
+        const res = await president.issueList.list(RMP, {
+          ...DEFAULT_ISSUE_LIST_QUERY,
+          ...changes,
+        });
+        if (!res.ok) throw new Error(res.error.message);
+        return res.value.total;
+      };
+      expect(await count({})).toBe(stats.value.total);
+      expect(await count({ view: 'open' })).toBe(stats.value.open);
+      expect(await count({ view: 'needs_review' })).toBe(stats.value.awaitingReview);
+      expect(await count({ view: 'critical' })).toBe(stats.value.criticalOpen);
+      expect(await count({ view: 'reopened' })).toBe(stats.value.reopened);
+      expect(await count({ status: 'CLOSED' })).toBe(stats.value.closed);
+      expect(await count({ search: 'bus stand' })).toBe(2);
+      expect(await count({ search: 'RMP-2026-00005' })).toBe(1);
+
+      const byCategory = await president.analytics.byCategory(RMP);
+      expect(byCategory.ok && byCategory.value.reduce((n, c) => n + c.total, 0)).toBe(
+        stats.value.total,
+      );
+      const departments = await president.issueList.listDepartments(RMP);
+      expect(departments.ok && departments.value.map((d) => d.name)).toEqual([
+        'Electrical',
+        'Sanitation',
+      ]);
+
+      const page2 = await president.issueList.list(RMP, { ...DEFAULT_ISSUE_LIST_QUERY, page: 99 });
+      expect(page2.ok && page2.value.rows).toEqual([]);
+
+      // Live signals: the president hears about a new report; a citizen hears nothing.
+      const heard: string[] = [];
+      let status = '';
+      const live = await president.issueList.subscribeToChanges(
+        RMP,
+        (id) => heard.push(id),
+        (s) => (status = s),
+      );
+      const citizenHeard: string[] = [];
+      let citizenStatus = '';
+      const citizen = services();
+      await citizen.auth.verifyOtp('9000000016', '123456');
+      const citizenLive = await citizen.issueList.subscribeToChanges(
+        RMP,
+        (id) => citizenHeard.push(id),
+        (s) => (citizenStatus = s),
+      );
+      expect(await until(() => status === 'live')).toBe(true);
+      expect(await until(() => citizenStatus === 'offline')).toBe(true);
+
+      const reporter = services();
+      await reporter.auth.verifyOtp('9000000016', '123456');
+      const categories = await reporter.issues.listCategories();
+      const other = categories.ok ? categories.value.find((c) => c.key === 'OTHER') : undefined;
+      if (!other) throw new Error('no OTHER category');
+      const created = await reporter.issues.createIssue(
+        {
+          villageId: RMP,
+          categoryId: other.id,
+          title: 'Stray dogs near the school',
+          locationText: 'School road',
+          clientRequestId: crypto.randomUUID(),
+        },
+        [],
+      );
+      if (!created.ok) throw new Error(created.error.message);
+      expect(await until(() => heard.includes(created.value.id))).toBe(true);
+      expect(citizenHeard).toEqual([]);
+      await live.close();
+      await citizenLive.close();
+    },
+    30_000,
+  );
 });

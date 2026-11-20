@@ -6,6 +6,7 @@ import { Alert } from '@/components/ui/alert';
 import { Card } from '@/components/ui/card';
 import { requireStaff } from '@/features/auth/staff-context';
 import { CommentForm } from '@/features/issues/comment-form';
+import { LiveRefresh } from '@/features/issues/live-refresh';
 import { actorText, eventText, STATUS_LABEL, statusClass } from '@/features/issues/labels';
 import { getServerServices } from '@/lib/supabase/server';
 
@@ -35,8 +36,8 @@ export default async function IssuePage({ params }: { params: Promise<{ id: stri
   return (
     <div className="flex max-w-6xl flex-col gap-6">
       <div>
-        <Link href="/" className="text-sm text-neutral-600 hover:underline">
-          ← Dashboard
+        <Link href="/issues" className="text-sm text-neutral-600 hover:underline">
+          ← All Issues
         </Link>
         <div className="mt-2 flex flex-wrap items-center gap-3">
           <span className={`rounded-full px-3 py-1 text-sm font-medium ${statusClass(d.status)}`}>
@@ -46,6 +47,11 @@ export default async function IssuePage({ params }: { params: Promise<{ id: stri
           <span className="text-sm text-neutral-500">Priority: {d.priority.toLowerCase()}</span>
           {d.visibility === 'PRIVATE' ? (
             <span className="text-sm text-neutral-500">Private</span>
+          ) : null}
+          {ctx.permissions.has('issue.view_all') ? (
+            <span className="ml-auto">
+              <LiveRefresh villageId={d.villageId} issueId={d.id} />
+            </span>
           ) : null}
         </div>
         <h1 className="mt-2 text-2xl font-semibold text-neutral-900">{d.title}</h1>

@@ -1,6 +1,6 @@
 # Mana Village: Design Docs
 
-Status: **All Phase 0 questions answered (2026-11-20); docs updated to match. Phases 2–4 done; Phase 5 (issue details and timeline) in review.**
+Status: **All Phase 0 questions answered (2026-11-20); docs updated to match. Phases 2–5 done; Phase 6 (admin dashboard and All Issues) in review.**
 
 Mana Village is an issue tracking, resolution and transparency system for village civic problems. It is not a complaint form. Every issue carries a permanent, reconstructable timeline of who did what and when.
 
@@ -84,3 +84,12 @@ These refine the design above; the code and these notes win where they differ.
 4. **Photos are shown through private links** (signed URLs, valid 1 hour). Storage checks the viewer may see the issue before signing.
 5. Residents can comment on issues they reported or support. On someone else's issue the app offers "I'm affected too" first.
 6. The admin dashboard shows the 10 latest reports, linking to the new issue page (details, photos, timeline, public comments and internal notes). The full All Issues table comes in Phase 6.
+
+## Changes made while building Phase 6
+
+1. **Live updates use a private "issue changed" signal, not raw row streaming** (migration `20261120001700`). docs/api.md §6 planned `postgres_changes` on `issues`. That would need a direct read policy on the base table and would send every column (including fields residents must never see) to the browser. Instead a trigger sends `{id, version, op}` on the private Realtime channel `village:<id>:issues`, and only people holding `issue.view_all` in that village (with the security code for MFA roles) may listen. The admin page then reloads through `issues_view`, so the normal privacy rules apply again.
+2. **Sample issues in the dev seed** (`supabase/seed/02_sample_issues.sql`, Ramapuram only plus one in Kondapalli). They are created and moved through the workflow with the real database functions, so their history, audit rows and notifications are real. Two extra sample residents were added: Sita (+91 90000 00017) and Gopal (+91 90000 00018). The expected dashboard numbers are listed at the top of the file and checked by `08_dashboard.test.sql`.
+3. **Dashboard date range uses relative presets** (all time, last 7, 30 or 90 days), and the All Issues "Reported" filter uses the same presets. This avoids time-zone mistakes with calendar dates. A calendar date picker can come with the Analytics screen (Phase 11).
+4. **All Issues filters live in the address bar**, so a filtered view can be bookmarked or shared with another staff member. Saved views: Open, Needs review, Critical, Reopened, Waiting for resident.
+5. **"Affected" in the table counts the reporter plus supporters.**
+6. Not in this phase: the "overdue" count from docs/ui-ux.md (needs assignment due dates, which arrive with assignment in Phase 7) and `resolution_trend` (Analytics, Phase 11).

@@ -59,5 +59,6 @@ jobs:
           diff -u packages/core/src/types/database.ts /tmp/database.ts
       - name: Services integration tests (real API, seeded users)
         run: |
-          eval "$(pnpm exec supabase status -o env | grep -E '^(API_URL|ANON_KEY)=')"
-          MANA_SUPABASE_URL="$API_URL" MANA_SUPABASE_ANON_KEY="$ANON_KEY" pnpm --filter @mana/services test
+          eval "$(pnpm exec supabase status -o env | grep -E '^(API_URL|ANON_KEY|SERVICE_ROLE_KEY)=')"
+          MANA_SUPABASE_URL="$API_URL" MANA_SUPABASE_ANON_KEY="$ANON_KEY" \
+          MANA_SUPABASE_SERVICE_KEY="$SERVICE_ROLE_KEY" pnpm --filter @mana/services test

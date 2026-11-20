@@ -123,4 +123,4 @@ Viewing: `createSignedUrl` (or batch `createSignedUrls`) valid ~1 hour, only aft
 
 ## 6. Realtime
 
-Only the admin **All Issues** list and **Issue Details** subscribe to `postgres_changes` on `issues` (filtered by village). Realtime respects RLS. Mobile does not use Realtime in V1; it refetches on focus and on push receipt (cheaper on battery and data).
+Only the admin **All Issues** list and **Issue Details** listen for changes. A database trigger sends a content-free signal `issue_changed {id, version, op}` on the private channel `village:<village_id>:issues`; only holders of `issue.view_all` in that village may join (policy on `realtime.messages`). The page then refetches through `issues_view`. (Changed in Phase 6 from `postgres_changes`, which would have exposed every column of the base table.) Mobile does not use Realtime in V1; it refetches on focus and on push receipt (cheaper on battery and data).
