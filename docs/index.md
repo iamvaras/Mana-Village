@@ -1,6 +1,6 @@
 # Mana Village: Design Docs
 
-Status: **All Phase 0 questions answered (2026-11-20); docs updated to match. Phases 2–6 done; Phase 7 (verification and assignment) in review.**
+Status: **All Phase 0 questions answered (2026-11-20); docs updated to match. Phases 2–7 done; Phase 8 (worker workflow) in review.**
 
 Mana Village is an issue tracking, resolution and transparency system for village civic problems. It is not a complaint form. Every issue carries a permanent, reconstructable timeline of who did what and when.
 
@@ -102,3 +102,12 @@ These refine the design above; the code and these notes win where they differ.
 4. **Every action sends the version the person was looking at.** If someone else changed the issue meanwhile, the database refuses and the page refreshes with a clear message.
 5. **Database messages are shown as plain sentences** ("A department with this name already exists.") instead of the internal code prefix.
 6. Adding a worker uses the existing `invite-staff` Edge Function, which cannot run in the local setup here; it was checked up to the phone-number validation. Removing a worker revokes the WORKER role with a reason (audited) and warns when they still have open issues.
+
+## Changes made while building Phase 8
+
+1. **One new database function, `list_my_work`** (migration `20261120001900`). It returns only the issues whose current assignment belongs to the signed-in worker: given to them by name, or to their department with nobody named yet. It uses the same rule as the work actions themselves, so the list and the allowed buttons always agree. No phone numbers or reporter details. No new tables. The accept / decline / start / progress / resolve functions already existed from Phase 5 and were not changed.
+2. **The Work tab appears only for people holding an active WORKER role.** Hiding it is for convenience; the database returns nothing to anyone else.
+3. **Work list groups:** Reopened, New, In progress, and Waiting for the resident (work sent as done but not yet confirmed). Urgent, high-priority and overdue work is tagged, and work given to the whole department shows "Not yet taken" until a worker accepts it.
+4. **The work steps live on the normal issue screen** instead of a separate `work/[id]` screen: a "Your work" card appears there for the assigned worker, with the secretary's instruction, Open in Maps, and only the buttons the database would allow (Accept / Decline with a reason / Start work / Add an update / Mark as done). One screen means the worker also sees the timeline, photos and comments in one place.
+5. **Updates are public notes so the resident sees progress.** Marking as done needs at least one completion photo; photos are resized and stripped of location data on the phone, as in the report flow. Staff notes (internal comments) are shown to the assigned worker with a "Staff note" label and are never shown to residents.
+6. Declining sends the issue back to Verified and tells the secretary, who reassigns it.

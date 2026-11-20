@@ -27,7 +27,7 @@ Modal / stack routes
   issue/[id]/confirm    (deep link from notification)
   announcements, announcements/[id]
   settings
-  work/[id]             (worker: start, progress, complete)
+  (worker steps are on issue/[id]: a "Your work" card, see §2.3)
 ```
 
 Suggested order change for the report flow: **Category → Photos → Location → Similar issues → Details → Review**. Photos first is the most natural action ("take a picture of the problem"), and category + location must be known before we can check for similar issues. Your list had Category → Location → Photos; either works, so tell me if you prefer yours.
@@ -60,8 +60,8 @@ Suggested order change for the report flow: **Category → Photos → Location �
 
 | Screen | Content |
 |---|---|
-| Work list | issues assigned to me / my department, grouped: New, In progress, Reopened |
-| Work detail | issue info, location with "Open in Maps", internal notes, **Accept / Decline**, **Start work**, **Add progress** (note + photos), **Mark completed** (completion photo required + note) |
+| Work list | issues assigned to me / my department, grouped: Reopened, New, In progress, Waiting for the resident |
+| Work detail (the issue screen with a "Your work" card) | issue info, location with "Open in Maps", internal notes, **Accept / Decline**, **Start work**, **Add progress** (note + photos), **Mark completed** (completion photo required + note) |
 
 ## 3. Admin web app (Next.js)
 

@@ -9,6 +9,8 @@ import { colors, space } from '@/components/theme';
 import { issueKeys, useComments, useIssue, usePhotos, useTimeline } from '@/features/issues/hooks';
 import { StatusChip } from '@/features/issues/status-chip';
 import { actorLabel, timelineText } from '@/features/issues/timeline-text';
+import { useIsWorker, useMyWork } from '@/features/work/hooks';
+import { WorkPanel } from '@/features/work/work-panel';
 import { useI18n } from '@/i18n/i18n-provider';
 import { services } from '@/lib/supabase';
 
@@ -20,13 +22,20 @@ export default function IssueDetailScreen() {
   const timeline = useTimeline(id);
   const comments = useComments(id);
   const photos = usePhotos(id);
+  const worker = useIsWorker();
+  const work = useMyWork(worker);
+  const workItem = work.data?.find((w) => w.issueId === id);
   const [comment, setComment] = useState('');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const locale = language === 'te' ? 'te-IN' : 'en-IN';
   const entries = useMemo(() => buildTimeline(timeline.data ?? []), [timeline.data]);
 
-  const refresh = () => queryClient.invalidateQueries({ queryKey: issueKeys.detail(id) });
+  const refresh = () =>
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: issueKeys.detail(id) }),
+      ...(worker ? [work.refetch()] : []),
+    ]);
 
   async function sendComment() {
     if (!services) return;
@@ -115,6 +124,10 @@ export default function IssueDetailScreen() {
           ) : null}
         </Card>
 
+        {workItem && d.iAmAssignee ? (
+          <WorkPanel key={workItem.assignmentId} item={workItem} />
+        ) : null}
+
         {message ? <Notice tone="error">{message}</Notice> : null}
         {canSupport ? (
           <Button label={s.issue.affectedButton} busy={busy} onPress={() => void support()} />
@@ -193,6 +206,9 @@ export default function IssueDetailScreen() {
               )}{' '}
               · {formatTimelineTime(c.createdAt, locale)}
             </Text>
+            {c.visibility === 'INTERNAL' ? (
+              <Text style={styles.internal}>{s.issue.internalNote}</Text>
+            ) : null}
             <Body muted={c.isHidden}>{c.isHidden ? s.issue.commentHidden : (c.body ?? '')}</Body>
           </Card>
         ))}
@@ -239,6 +255,7 @@ const styles = StyleSheet.create({
   photo: { width: 160, height: 160, borderRadius: 8, backgroundColor: colors.border },
   photoMissing: { alignItems: 'center', justifyContent: 'center', padding: space.sm },
   small: { fontSize: 13, color: colors.muted },
+  internal: { fontSize: 13, fontWeight: '600', color: colors.info },
   infoRow: { gap: 2 },
   infoValue: { fontSize: 16, color: colors.text },
   event: { flexDirection: 'row', gap: space.md },
