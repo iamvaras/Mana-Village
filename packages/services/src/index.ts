@@ -14,6 +14,7 @@ import { createNotificationsService } from './notifications';
 import { createProfileService } from './profile';
 import { createPushService } from './push';
 import { createResolutionService } from './resolution';
+import { createSettingsService } from './settings';
 import { createVillagesService } from './villages';
 import { createWorkflowService } from './workflow';
 import { createWorkService } from './work';
@@ -38,6 +39,7 @@ export * from './resolution';
 export * from './push';
 export * from './announcements';
 export * from './audit';
+export * from './settings';
 
 /** All services bound to one Supabase client. Components use hooks that call these. */
 export function createServices(client: ManaClient) {
@@ -60,6 +62,7 @@ export function createServices(client: ManaClient) {
     push: createPushService(client),
     announcements: createAnnouncementsService(client),
     audit: createAuditService(client),
+    settings: createSettingsService(client),
   };
 }
 export type Services = ReturnType<typeof createServices>;
