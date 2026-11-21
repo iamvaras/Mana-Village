@@ -47,6 +47,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "owner": "iamvaras",
+    "extra": {
+      "eas": {
+        "projectId": "b5919f49-83ae-4eed-8f21-a471c7148c91"
+      }
     }
   }
 }
