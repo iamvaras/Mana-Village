@@ -66,7 +66,7 @@ export function LiveRefresh({ villageId, issueId }: { villageId: string; issueId
       <span aria-hidden="true" className={`inline-block h-2 w-2 rounded-full ${dot}`} />
       {text}
       {updatedAt && status === 'live' ? (
-        <span className="text-neutral-500">
+        <span className="text-neutral-600">
           · updated {updatedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </span>
       ) : null}

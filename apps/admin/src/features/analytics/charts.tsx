@@ -55,7 +55,11 @@ export function TrendChart({ data }: { data: readonly TrendDatum[] }) {
       <Legend />
       <div className="h-64 w-full" aria-hidden="true">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={[...data]} margin={{ top: 8, right: 16, bottom: 0, left: -16 }}>
+          <LineChart
+            accessibilityLayer={false}
+            data={[...data]}
+            margin={{ top: 8, right: 16, bottom: 0, left: -16 }}
+          >
             <CartesianGrid stroke={GRID} vertical={false} />
             <XAxis
               dataKey="label"
@@ -103,7 +107,11 @@ export function FixTimeChart({ data }: { data: readonly FixTimeDatum[] }) {
   return (
     <div className="h-56 w-full" aria-hidden="true">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={[...data]} margin={{ top: 8, right: 16, bottom: 0, left: -16 }}>
+        <BarChart
+          accessibilityLayer={false}
+          data={[...data]}
+          margin={{ top: 8, right: 16, bottom: 0, left: -16 }}
+        >
           <CartesianGrid stroke={GRID} vertical={false} />
           <XAxis
             dataKey="label"

@@ -1,6 +1,6 @@
 # Mana Village: Design Docs
 
-Status: **All Phase 0 questions answered (2026-11-20); docs updated to match. Phases 2–10 done; Phase 11 parts 1–2 merged, part 3 (users, categories, settings) in review.**
+Status: **All Phase 0 questions answered (2026-11-20); docs updated to match. Phases 2–11 done; Phase 12 (QA and security review) in review: [qa/phase12-report.md](qa/phase12-report.md).**
 
 Mana Village is an issue tracking, resolution and transparency system for village civic problems. It is not a complaint form. Every issue carries a permanent, reconstructable timeline of who did what and when.
 

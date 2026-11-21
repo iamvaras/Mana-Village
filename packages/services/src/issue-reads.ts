@@ -156,12 +156,12 @@ export function createIssueReadsService(client: ManaClient): IssueReadsService {
     async listMine(filter) {
       const res = required(
         await run(() =>
+          // list_my_issues starts from my own rows; filtering issues_view by
+          // is_mine/i_support scanned every issue (Phase 12 load test).
           client
-            .from('issues_view')
+            .rpc('list_my_issues', { p_limit: 200 })
             .select(SUMMARY_COLUMNS)
-            .or('is_mine.eq.true,i_support.eq.true')
-            .order('last_status_change_at', { ascending: false })
-            .limit(200),
+            .order('last_status_change_at', { ascending: false }),
         ),
       );
       if (!res.ok) return res;

@@ -135,7 +135,7 @@ export default async function AnalyticsPage({
         </Card>
       </div>
 
-      <p className="text-xs text-neutral-500">
+      <p className="text-xs text-neutral-600">
         How these are counted: every figure covers issues reported in the chosen range. Trend
         &quot;closed&quot; counts closings in each period. Time to fix runs from the report until it
         was finally marked solved, for closed issues. Reopened rate is the share of issues ever
@@ -171,7 +171,7 @@ function ReportSections({ report }: { report: AnalyticsReport }) {
 
       <Card title={`Reported and closed, per ${per}`}>
         {totalReported + totalClosed === 0 ? (
-          <p className="text-sm text-neutral-500">No issues in this range.</p>
+          <p className="text-sm text-neutral-600">No issues in this range.</p>
         ) : (
           <>
             <TrendChart data={trend} />
@@ -180,7 +180,7 @@ function ReportSections({ report }: { report: AnalyticsReport }) {
               <table className="mt-2 w-full max-w-md">
                 <caption className="sr-only">Reported and closed per {per}</caption>
                 <thead>
-                  <tr className="border-b border-neutral-200 text-left text-xs text-neutral-500">
+                  <tr className="border-b border-neutral-200 text-left text-xs text-neutral-600">
                     <th scope="col" className="py-1 pr-3 font-medium">
                       {per === 'month' ? 'Month' : 'Week of'}
                     </th>
@@ -211,7 +211,7 @@ function ReportSections({ report }: { report: AnalyticsReport }) {
 
       <Card title="Time to fix (closed issues)">
         {totalFixed === 0 ? (
-          <p className="text-sm text-neutral-500">No closed issues in this range yet.</p>
+          <p className="text-sm text-neutral-600">No closed issues in this range yet.</p>
         ) : (
           <>
             <FixTimeChart data={fix} />

@@ -18,7 +18,7 @@ export function Field({ id, label, hint, error, prefix, className = '', ...rest 
       <div
         className={`flex h-11 items-center rounded-md border bg-white focus-within:outline-2 focus-within:outline-brand-600 ${error ? 'border-red-500' : 'border-neutral-300'}`}
       >
-        {prefix ? <span className="pl-3 text-neutral-500">{prefix}</span> : null}
+        {prefix ? <span className="pl-3 text-neutral-600">{prefix}</span> : null}
         <input
           {...rest}
           id={id}
@@ -32,7 +32,7 @@ export function Field({ id, label, hint, error, prefix, className = '', ...rest 
           {error}
         </p>
       ) : hint ? (
-        <p id={`${id}-hint`} className="text-sm text-neutral-500">
+        <p id={`${id}-hint`} className="text-sm text-neutral-600">
           {hint}
         </p>
       ) : null}

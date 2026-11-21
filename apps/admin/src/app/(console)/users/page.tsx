@@ -136,7 +136,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
                   <p className="font-medium text-neutral-900">
                     {u.fullName}
                     {u.id === ctx.userId ? (
-                      <span className="ml-2 text-sm font-normal text-neutral-500">(you)</span>
+                      <span className="ml-2 text-sm font-normal text-neutral-600">(you)</span>
                     ) : null}
                     <span
                       className={`ml-2 rounded-full px-2 py-0.5 text-xs ${STATUS_CLASS[u.status]}`}
@@ -147,7 +147,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
                   <p className="text-sm text-neutral-600">
                     {u.roles.map((r) => ROLE_LABEL[r.role] ?? r.role).join(', ') || 'No role'}
                   </p>
-                  <p className="text-xs text-neutral-500">
+                  <p className="text-xs text-neutral-600">
                     Joined{' '}
                     {new Date(u.createdAt).toLocaleDateString('en-IN', {
                       day: 'numeric',

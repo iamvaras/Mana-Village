@@ -22,7 +22,7 @@ export function StatTile({
       >
         {value}
       </p>
-      {hint ? <p className="mt-1 text-xs text-neutral-500">{hint}</p> : null}
+      {hint ? <p className="mt-1 text-xs text-neutral-600">{hint}</p> : null}
     </>
   );
   const box = 'block rounded-lg border border-neutral-200 bg-white p-4 shadow-sm';
@@ -61,12 +61,12 @@ export function BreakdownTable({
   emptyText: string;
 }) {
   const max = Math.max(1, ...rows.map((r) => r.total));
-  if (rows.length === 0) return <p className="text-sm text-neutral-500">{emptyText}</p>;
+  if (rows.length === 0) return <p className="text-sm text-neutral-600">{emptyText}</p>;
   return (
     <table className="w-full text-sm">
       <caption className="sr-only">{caption}</caption>
       <thead>
-        <tr className="border-b border-neutral-200 text-left text-xs text-neutral-500">
+        <tr className="border-b border-neutral-200 text-left text-xs text-neutral-600">
           <th scope="col" className="py-2 pr-3 font-medium">
             Name
           </th>

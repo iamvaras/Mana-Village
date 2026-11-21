@@ -379,7 +379,7 @@ export default async function AllIssuesPage({
           ) : null}
         </>
       )}
-      <p className="text-xs text-neutral-500">
+      <p className="text-xs text-neutral-600">
         “Affected” counts the reporter plus residents who said they have the same problem.
       </p>
     </div>

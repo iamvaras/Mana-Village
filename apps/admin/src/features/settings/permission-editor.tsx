@@ -51,7 +51,7 @@ export function PermissionEditor({ matrix }: { matrix: PermissionMatrix }) {
     router.refresh();
   }
 
-  if (!role) return <p className="text-sm text-neutral-500">No roles to edit.</p>;
+  if (!role) return <p className="text-sm text-neutral-600">No roles to edit.</p>;
 
   return (
     <div className="flex flex-col gap-4">
@@ -105,7 +105,7 @@ export function PermissionEditor({ matrix }: { matrix: PermissionMatrix }) {
                       />
                       <span>
                         {p.description}
-                        <span className="block text-xs text-neutral-500">{p.key}</span>
+                        <span className="block text-xs text-neutral-600">{p.key}</span>
                       </span>
                     </label>
                   </li>

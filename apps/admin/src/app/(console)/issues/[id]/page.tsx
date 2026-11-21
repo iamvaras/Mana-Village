@@ -68,12 +68,12 @@ export default async function IssuePage({ params }: { params: Promise<{ id: stri
           <span className={`rounded-full px-3 py-1 text-sm font-medium ${statusClass(d.status)}`}>
             {STATUS_LABEL[d.status]}
           </span>
-          <span className="text-sm text-neutral-500">{d.issueNumber}</span>
+          <span className="text-sm text-neutral-600">{d.issueNumber}</span>
           <span className={`text-sm ${priorityClass(d.priority)}`}>
             {PRIORITY_LABEL[d.priority]} priority
           </span>
           {d.visibility === 'PRIVATE' ? (
-            <span className="text-sm text-neutral-500">Private</span>
+            <span className="text-sm text-neutral-600">Private</span>
           ) : null}
           {ctx.permissions.has('issue.view_all') ? (
             <span className="ml-auto">
@@ -88,29 +88,29 @@ export default async function IssuePage({ params }: { params: Promise<{ id: stri
         <div className="flex flex-col gap-6">
           <Card title="Details">
             <dl className="grid grid-cols-[10rem_1fr] gap-x-4 gap-y-2 text-sm">
-              <dt className="text-neutral-500">Category</dt>
+              <dt className="text-neutral-600">Category</dt>
               <dd>{d.categoryName}</dd>
-              <dt className="text-neutral-500">Reported by</dt>
+              <dt className="text-neutral-600">Reported by</dt>
               <dd>{d.reporterName ?? 'Resident'}</dd>
-              <dt className="text-neutral-500">Reported on</dt>
+              <dt className="text-neutral-600">Reported on</dt>
               <dd>{formatTimelineTime(d.createdAt)}</dd>
-              <dt className="text-neutral-500">Location</dt>
+              <dt className="text-neutral-600">Location</dt>
               <dd>
                 {d.locationText ?? '—'}
                 {d.latitude !== null && d.longitude !== null ? (
-                  <span className="text-neutral-500">
+                  <span className="text-neutral-600">
                     {' '}
                     ({d.latitude.toFixed(5)}, {d.longitude.toFixed(5)})
                   </span>
                 ) : null}
               </dd>
-              <dt className="text-neutral-500">Affected residents</dt>
+              <dt className="text-neutral-600">Affected residents</dt>
               <dd>{d.supporterCount + 1}</dd>
-              <dt className="text-neutral-500">Priority</dt>
+              <dt className="text-neutral-600">Priority</dt>
               <dd>{PRIORITY_LABEL[d.priority]}</dd>
-              <dt className="text-neutral-500">Department</dt>
+              <dt className="text-neutral-600">Department</dt>
               <dd>{d.assignedDepartmentName ?? '—'}</dd>
-              <dt className="text-neutral-500">Assigned to</dt>
+              <dt className="text-neutral-600">Assigned to</dt>
               <dd>{d.assignedUserName ?? '—'}</dd>
             </dl>
             {d.description ? (
@@ -122,7 +122,7 @@ export default async function IssuePage({ params }: { params: Promise<{ id: stri
             {!photos.ok ? (
               <Alert tone="error">Could not load photos.</Alert>
             ) : photos.value.length === 0 ? (
-              <p className="text-sm text-neutral-500">No photos.</p>
+              <p className="text-sm text-neutral-600">No photos.</p>
             ) : (
               <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {photos.value.map((p) => (
@@ -132,16 +132,16 @@ export default async function IssuePage({ params }: { params: Promise<{ id: stri
                         {/* Short-lived private link from Storage. */}
                         <img
                           src={p.url}
-                          alt={`${p.kind.toLowerCase()} photo`}
+                          alt={`${p.kind.toLowerCase().replace(/_/g, ' ')} photo`}
                           className="aspect-square w-full rounded-md object-cover"
                         />
                       </a>
                     ) : (
-                      <div className="flex aspect-square items-center justify-center rounded-md bg-neutral-100 text-xs text-neutral-500">
+                      <div className="flex aspect-square items-center justify-center rounded-md bg-neutral-100 text-xs text-neutral-600">
                         Not available
                       </div>
                     )}
-                    <span className="text-xs text-neutral-500">
+                    <span className="text-xs text-neutral-600">
                       {p.kind.replace('_', ' ').toLowerCase()} · {formatTimelineTime(p.createdAt)}
                     </span>
                   </li>
@@ -154,7 +154,7 @@ export default async function IssuePage({ params }: { params: Promise<{ id: stri
             {!comments.ok ? (
               <Alert tone="error">Could not load comments.</Alert>
             ) : comments.value.length === 0 ? (
-              <p className="text-sm text-neutral-500">No comments yet.</p>
+              <p className="text-sm text-neutral-600">No comments yet.</p>
             ) : (
               <ul className="mb-6 flex flex-col gap-3">
                 {comments.value.map((c) => (
@@ -162,7 +162,7 @@ export default async function IssuePage({ params }: { params: Promise<{ id: stri
                     key={c.id}
                     className={`rounded-md border p-3 text-sm ${c.visibility === 'INTERNAL' ? 'border-amber-200 bg-amber-50' : 'border-neutral-200'}`}
                   >
-                    <p className="text-xs text-neutral-500">
+                    <p className="text-xs text-neutral-600">
                       {actorText({
                         isMine: c.isMine,
                         isSystem: false,
@@ -259,7 +259,7 @@ export default async function IssuePage({ params }: { params: Promise<{ id: stri
                           <span className="ml-2 text-xs text-amber-700">internal</span>
                         ) : null}
                       </p>
-                      <p className="text-xs text-neutral-500">
+                      <p className="text-xs text-neutral-600">
                         {actorText(e)} · {formatTimelineTime(e.occurredAt)}
                       </p>
                       {e.reason ? <p className="mt-1 text-neutral-700">{e.reason}</p> : null}
