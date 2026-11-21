@@ -83,7 +83,7 @@ export const PRIORITY_LABEL: Readonly<Record<IssuePriority, string>> = {
 };
 
 const PRIORITY_TONE: Readonly<Record<IssuePriority, string>> = {
-  LOW: 'text-neutral-500',
+  LOW: 'text-neutral-600',
   MEDIUM: 'text-neutral-700',
   HIGH: 'font-medium text-amber-800',
   CRITICAL: 'font-semibold text-red-700',

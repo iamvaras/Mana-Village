@@ -49,7 +49,7 @@ export default async function DepartmentsPage() {
                   <p className="font-medium text-neutral-900">
                     {d.name}
                     {d.nameLocal ? (
-                      <span className="ml-2 font-normal text-neutral-500">{d.nameLocal}</span>
+                      <span className="ml-2 font-normal text-neutral-600">{d.nameLocal}</span>
                     ) : null}
                     {!d.isActive ? (
                       <span className="ml-2 rounded bg-neutral-100 px-1.5 text-xs font-normal text-neutral-600">

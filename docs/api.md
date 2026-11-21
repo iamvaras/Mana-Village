@@ -24,6 +24,7 @@ All RPCs: `SECURITY DEFINER`, `SET search_path = ''`, validate every argument, r
 | `add_comment` | issue_id, body, visibility | comment |
 | `confirm_resolution` | issue_id, solved boolean, reason?, expected_version | issue |
 | `get_my_permissions` | village_id | text[] |
+| `list_my_issues` | limit? (max 200) | `issues_view` rows I reported or support, newest activity first (added Phase 12: filtering the view by `is_mine`/`i_support` scanned every issue) |
 
 `client_request_id` (uuid generated on the phone) makes `create_issue` idempotent: if a flaky network makes the app retry, the same issue is returned instead of a second one.
 

@@ -14,7 +14,7 @@ export default async function ConsoleLayout({ children }: { children: ReactNode 
       <aside className="flex w-60 shrink-0 flex-col border-r border-neutral-200 bg-white">
         <div className="border-b border-neutral-200 px-5 py-4">
           <p className="text-sm font-semibold tracking-wide text-brand-700">MANA VILLAGE</p>
-          <p className="text-xs text-neutral-500">Admin</p>
+          <p className="text-xs text-neutral-600">Admin</p>
         </div>
         <nav aria-label="Main" className="flex-1 px-3 py-4">
           <ul className="flex flex-col gap-1">
@@ -76,7 +76,7 @@ export default async function ConsoleLayout({ children }: { children: ReactNode 
           <div className="flex items-center gap-4">
             <div className="text-right">
               <p className="text-sm font-medium text-neutral-900">{ctx.fullName}</p>
-              <p className="text-xs text-neutral-500">{ctx.roleLabels.join(', ')}</p>
+              <p className="text-xs text-neutral-600">{ctx.roleLabels.join(', ')}</p>
             </div>
             <SignOutButton />
           </div>

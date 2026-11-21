@@ -40,7 +40,7 @@ export default async function CategoriesPage() {
         {!list.ok ? (
           <Alert tone="error">Could not load categories: {list.error.message}</Alert>
         ) : list.value.length === 0 ? (
-          <p className="text-sm text-neutral-500">No categories yet.</p>
+          <p className="text-sm text-neutral-600">No categories yet.</p>
         ) : (
           <ul className="flex flex-col divide-y divide-neutral-100">
             {list.value.map((c) => (
@@ -57,7 +57,7 @@ export default async function CategoriesPage() {
                       </span>
                     )}
                   </p>
-                  <p className="text-xs text-neutral-500">
+                  <p className="text-xs text-neutral-600">
                     {c.key} · order {c.sortOrder}
                     {c.icon ? ` · icon ${c.icon}` : ''}
                     {c.defaultPriority ? ` · starts ${PRIORITY_LABEL[c.defaultPriority]}` : ''}

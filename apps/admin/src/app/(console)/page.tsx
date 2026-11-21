@@ -193,7 +193,7 @@ export default async function DashboardPage({
                   </dd>
                 </div>
               </dl>
-              <p className="mt-4 text-xs text-neutral-500">
+              <p className="mt-4 text-xs text-neutral-600">
                 Resolution rate counts issues closed out of all issues, leaving out rejected and
                 duplicate reports. Time to resolve uses closed issues only.
               </p>
@@ -249,7 +249,7 @@ export default async function DashboardPage({
         {!recent.ok ? (
           <Alert tone="error">Could not load reports: {recent.error.message}</Alert>
         ) : recent.value.length === 0 ? (
-          <p className="text-sm text-neutral-500">No reports in this village yet.</p>
+          <p className="text-sm text-neutral-600">No reports in this village yet.</p>
         ) : (
           <ul className="divide-y divide-neutral-100">
             {recent.value.map((i) => (
@@ -262,7 +262,7 @@ export default async function DashboardPage({
                     <span className="block truncate text-sm font-medium text-neutral-900">
                       {i.title}
                     </span>
-                    <span className="block text-xs text-neutral-500">
+                    <span className="block text-xs text-neutral-600">
                       {i.issueNumber} · {i.categoryName} · {formatTimelineTime(i.createdAt)}
                     </span>
                   </span>

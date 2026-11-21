@@ -181,7 +181,7 @@ export default async function AuditLogsPage({ searchParams }: { searchParams: Pr
           <table className="w-full text-sm">
             <caption className="sr-only">Audit log entries, newest first</caption>
             <thead>
-              <tr className="border-b border-neutral-200 text-left text-xs text-neutral-500">
+              <tr className="border-b border-neutral-200 text-left text-xs text-neutral-600">
                 <th scope="col" className="py-2 pr-3 font-medium">
                   When
                 </th>
@@ -240,7 +240,7 @@ function Row({ e, form }: { e: AuditEntry; form: Record<string, string> }) {
         ) : (
           <span className="text-neutral-700">System</span>
         )}
-        {role ? <span className="block text-xs text-neutral-500">{role}</span> : null}
+        {role ? <span className="block text-xs text-neutral-600">{role}</span> : null}
       </td>
       <td className="py-2 pr-3 text-neutral-900">
         {auditActionLabel(e.action)}
@@ -254,7 +254,7 @@ function Row({ e, form }: { e: AuditEntry; form: Record<string, string> }) {
             {UUID.test(e.entityId) ? (
               <Link
                 href={href(form, { entity: e.entityId, before: '' })}
-                className="ml-2 text-neutral-500 hover:underline"
+                className="ml-2 text-neutral-600 hover:underline"
               >
                 history
               </Link>
@@ -277,7 +277,7 @@ function Row({ e, form }: { e: AuditEntry; form: Record<string, string> }) {
             </summary>
             <table className="mt-2 w-full text-xs">
               <thead>
-                <tr className="text-left text-neutral-500">
+                <tr className="text-left text-neutral-600">
                   <th scope="col" className="pr-2 font-medium">
                     Field
                   </th>

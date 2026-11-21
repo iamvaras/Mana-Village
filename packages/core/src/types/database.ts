@@ -778,6 +778,54 @@ isOneToOne: false
               "action": string,"actor_name": string,"actor_role_key": string,"actor_user_id": string,"after": Json,"before": Json,"entity_id": string,"entity_type": string,"id": number,"issue_number": string,"metadata": Json,"occurred_at": string
             }[]
                            },
+"list_my_issues":
+{ Args: { "p_limit"?: number }; Returns: {
+              "assigned_at": string | null,
+"assigned_department_id": string | null,
+"assigned_department_name": string | null,
+"assigned_user_id": string | null,
+"assigned_user_name": string | null,
+"category_id": string,
+"category_key": string,
+"category_name": string,
+"category_name_local": string | null,
+"closed_at": string | null,
+"created_at": string,
+"description": string | null,
+"duplicate_of_issue_id": string | null,
+"i_am_assignee": boolean | null,
+"i_support": boolean | null,
+"id": string,
+"is_mine": boolean | null,
+"issue_number": string,
+"last_status_change_at": string,
+"latitude": number | null,
+"location_accuracy_m": number | null,
+"location_text": string | null,
+"longitude": number | null,
+"priority": Database["public"]['Enums']["issue_priority"],
+"rejected_at": string | null,
+"reopen_count": number,
+"reporter_id": string | null,
+"reporter_name": string | null,
+"resolved_at": string | null,
+"reviewed_at": string | null,
+"status": Database["public"]['Enums']["issue_status"],
+"supporter_count": number,
+"title": string,
+"updated_at": string,
+"verified_at": string | null,
+"version": number,
+"village_id": string,
+"visibility": Database["public"]['Enums']["issue_visibility"],
+"work_started_at": string | null
+            }[]
+                          SetofOptions: {
+        from: "*"
+        to: "issues_view"
+        isOneToOne: false
+        isSetofReturn: true
+      } },
 "list_my_work":
 { Args: Record<PropertyKey, never>; Returns: {
               "assigned_at": string,"assigned_to_me": boolean,"assignment_id": string,"assignment_note": string,"assignment_status": Database["public"]['Enums']["assignment_status"],"category_name": string,"category_name_local": string,"department_name": string,"due_at": string,"issue_id": string,"issue_number": string,"last_status_change_at": string,"latitude": number,"location_text": string,"longitude": number,"priority": Database["public"]['Enums']["issue_priority"],"status": Database["public"]['Enums']["issue_status"],"title": string,"version": number,"village_id": string

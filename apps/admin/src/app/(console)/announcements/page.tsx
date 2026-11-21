@@ -79,7 +79,7 @@ export default async function AnnouncementsPage() {
                   <p className="mt-1 line-clamp-2 text-sm whitespace-pre-line text-neutral-700">
                     {a.body}
                   </p>
-                  <p className="mt-1 text-xs text-neutral-500">
+                  <p className="mt-1 text-xs text-neutral-600">
                     {a.publishedAt
                       ? `Published ${when(a.publishedAt)}`
                       : `Written ${when(a.createdAt)}`}

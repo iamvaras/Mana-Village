@@ -112,7 +112,7 @@ export function VillageSettingsForm({
             <option value="PUBLIC">Public (other residents can see them)</option>
             <option value="PRIVATE">Private (only the reporter and staff)</option>
           </select>
-          <span className="text-xs text-neutral-500">
+          <span className="text-xs text-neutral-600">
             Used when the resident does not mark the report private themselves.
           </span>
         </label>
