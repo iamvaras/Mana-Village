@@ -40,9 +40,13 @@ pnpm exec supabase secrets set PUSH_SECRET=<random 32+ chars> ADMIN_WEB_ORIGIN=<
 # after step 4 (Expo): EXPO_ACCESS_TOKEN=<token from expo.dev, optional but recommended>
 ```
 
-Then store the same push secret and the functions URL in Vault (SQL editor), as described
-in docs/api.md "Turning on push":
-`edge_functions_url` = `https://<ref>.supabase.co/functions/v1`, `push_secret` = the value above.
+Then store the functions URL and the same push secret in Vault (SQL editor; see docs/api.md
+"Turning on push"). Until this is done the database never calls out:
+
+```sql
+select vault.create_secret('https://<ref>.supabase.co/functions/v1', 'edge_functions_url');
+select vault.create_secret('<same PUSH_SECRET>', 'push_secret');
+```
 
 ## 4. Expo / EAS (Android test build)
 
@@ -56,9 +60,11 @@ in docs/api.md "Turning on push":
    pnpm dlx eas-cli env:create --environment preview --name EXPO_PUBLIC_SUPABASE_ANON_KEY --value <anon/publishable key> --visibility plaintext
    ```
 
-3. Android push needs Firebase: create a Firebase project, add an Android app with package
-   `in.manavillage.app`, then upload its FCM V1 service-account key in
-   `eas credentials` (Android → Push Notifications). Expo's guide: "FCM credentials".
+3. Android push needs Firebase: create a Firebase project and add an Android app with
+   package `in.manavillage.app`. Download its `google-services.json` into `apps/mobile` and
+   set `"googleServicesFile": "./google-services.json"` under `android` in app.json. Then
+   upload the FCM V1 service-account key with `eas credentials` (Android → Push
+   Notifications). Expo's guide: "FCM credentials".
 4. Build: `pnpm dlx eas-cli build --profile preview --platform android`. Open the link on
    the phone and install the APK.
 
